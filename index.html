@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <title>战鹰系统</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Art Design Pro - A modern admin dashboard template built with Vue 3, TypeScript, and Element Plus."
+    />
+    <link rel="shortcut icon" type="image/x-icon" href="src/assets/images/favicon.ico" />
+
+    <!-- <script type="text/javascript">
+    window._TMapSecurityConfig = {
+      serviceHost: "http://localhost:8800/_TMapService",
+      // 例如 ：serviceHost:'http://127.0.0.1:8080/_TMapService',
+    };
+    </script> -->
+    <!-- 引入JS API, 链接中不带'&key=XXXX-XXXX-XXXX-XXXX'的参数 -->
+    <!-- <script src="https://map.qq.com/api/gljs?v=1.exp&libraries=visualization"></script> -->
+    
+
+    <style>
+      /* 防止页面刷新时白屏的初始样式 */
+      html {
+        background-color: #fafbfc;
+      }
+
+      html.dark {
+        background-color: #070707;
+      }
+    </style>
+
+    <script>
+      // 初始化 html class 主题属性
+      ;(function () {
+        try {
+          if (typeof Storage === 'undefined' || !window.localStorage) {
+            return
+          }
+
+          const themeType = localStorage.getItem('sys-theme')
+          if (themeType === 'dark') {
+            document.documentElement.classList.add('dark')
+          }
+        } catch (e) {
+          console.warn('Failed to apply initial theme:', e)
+        }
+      })()
+    </script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
