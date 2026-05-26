@@ -51,13 +51,13 @@
                 format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
                 class="date-picker"
-                @change="fetchGroupList"
               />
               <el-select
                 v-model="selectedGroupCode"
                 placeholder="全部片区"
                 class="group-select"
                 clearable
+                @focus="handleGroupSelectFocus"
               >
                 <el-option
                   v-for="item in groupOptions"
@@ -335,7 +335,7 @@
 
       // 在后台异步加载数据，不阻塞地图初始化
       fetchLatestLocations().catch(err => console.error('加载位置数据失败:', err));
-      fetchGroupList().catch(err => console.error('加载分组列表失败:', err));
+      // fetchGroupList().catch(err => console.error('加载分组列表失败:', err));
       
       loading.value = false
     } catch (err: any) {
@@ -369,20 +369,37 @@
 
 
   // ==================== 获取片区列表 ====================
+  const handleGroupSelectFocus = () => {
+    if (groupOptions.value.length === 0) {
+      fetchGroupList()
+    }
+  }
+
   const fetchGroupList = async () => {
     try {
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
       
-      // await LogService.userMapLog('日期筛选', params)
-      
       const allGroups = await axiosRequestGroupList(params)
       const userData = await axiosRequestLatestLocations(params)
 
       const groupsWithData = new Set(userData.map((user: any) => user.groupscode))
-      const filteredGroups = (allGroups || []).filter((group: any) =>
+      let filteredGroups = (allGroups || []).filter((group: any) =>
         groupsWithData.has(group.groupscode)
       )
+
+      // 只保留"第X片区"类型的小组
+      filteredGroups = filteredGroups.filter((group: any) => {
+        return /^第[一二三四五六七八九十]+片区$/.test(group.groups)
+      })
+
+      // 按 groupscode 去重
+      const seen = new Set()
+      filteredGroups = filteredGroups.filter((group: any) => {
+        if (seen.has(group.groupscode)) return false
+        seen.add(group.groupscode)
+        return true
+      })
 
       groupOptions.value = filteredGroups.sort((a: any, b: any) =>
         a.groupscode.localeCompare(b.groupscode)
