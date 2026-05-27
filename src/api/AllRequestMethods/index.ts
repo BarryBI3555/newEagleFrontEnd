@@ -31,6 +31,14 @@ export const axiosRequestUserTrajectory = (usercode: string, params: Record<stri
   return request.get({ url: `/api/locations/user/${usercode}`, params })
 }
 
+/**
+ * 获取人员位置地址解析进度
+ * @param params 查询参数
+ */
+export const axiosRequestLocationProgress = (params: Record<string, any> = {}) => {
+  return request.get({ url: '/api/locations/latest/progress', params })
+}
+
 // ==================== 热力图相关 API ====================
 
 /**
@@ -47,6 +55,14 @@ export const axiosRequestStatsCardsData = (params: Record<string, any> = {}) => 
  */
 export const axiosRequestHeatMapData = (params: Record<string, any> = {}) => {
   return request.get({ url: 'api/hotmap', params })
+}
+
+/**
+ * 获取热力图数据解析进度
+ * @param params 查询参数
+ */
+export const axiosRequestHotmapProgress = (params: Record<string, any> = {}) => {
+  return request.get({ url: 'api/hotmap/progress', params })
 }
 
 // ==================== 工作量统计相关 API ====================

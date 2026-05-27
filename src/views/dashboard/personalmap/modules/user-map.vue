@@ -9,6 +9,10 @@
         <div class="rendering-spinner"></div>
         <span>正在渲染标注...</span>
       </div>
+      <div v-if="!loading && !mapRendering && locationProgressText" class="map-rendering">
+        <div class="rendering-spinner"></div>
+        <span>{{ locationProgressText }}</span>
+      </div>
       
     </div>
 
@@ -198,7 +202,7 @@
   import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
   import { AdministrativeRegionManager } from '../../../../api/AdministrativeRegionmanager/AdministrativeRegionmanager'
   import { MapLoader } from '@/api/MapLoader/mapLoader'
-  import { axiosRequestLatestLocations, axiosRequestGroupList, axiosRequestUserTrajectory } from '@/api/AllRequestMethods/index'
+  import { axiosRequestLatestLocations, axiosRequestGroupList, axiosRequestUserTrajectory, axiosRequestLocationProgress } from '@/api/AllRequestMethods/index'
   import { LogService } from '@/services/logServices'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   const mapLoader = MapLoader.getInstance()
@@ -231,6 +235,12 @@
   const loading = ref(true)
   const error = ref('')
   const mapRendering = ref(false)
+
+  // 进度追踪
+  const locationProgressPercent = ref(0)
+  const locationProgressText = ref('')
+  let locationProgressTimer: ReturnType<typeof setInterval> | null = null
+
   const userList = ref<any[]>([])
   const isSidebarCollapsed = ref(false)
   const selectedUser = ref<string>('')
@@ -414,6 +424,14 @@
   // ==================== 获取人员最新位置（支持日期+片区+关键词） ====================
   const fetchLatestLocations = async () => {
     try {
+      // 清除已有的进度轮询
+      if (locationProgressTimer) {
+        clearInterval(locationProgressTimer)
+        locationProgressTimer = null
+      }
+      locationProgressText.value = ''
+      locationProgressPercent.value = 0
+
       mapRendering.value = true
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
@@ -490,11 +508,56 @@
         map.fitBounds(bounds, { padding: currentTrackPadding })
       }
       mapRendering.value = false
+
+      // 启动进度轮询，等待异步地址解析完成
+      startLocationProgressPolling()
     } catch (err: any) {
       mapRendering.value = false
       console.error('获取人员数据失败', err)
       error.value = '后端接口异常：' + err.message
     }
+  }
+
+  /**
+   * 轮询后端地址解析进度，完成后重新获取数据
+   */
+  const startLocationProgressPolling = () => {
+    const params: Record<string, any> = {}
+    if (selectedDate.value) params.date = selectedDate.value
+
+    if (locationProgressTimer) clearInterval(locationProgressTimer)
+
+    locationProgressTimer = setInterval(async () => {
+      try {
+        const res = await axiosRequestLocationProgress(params)
+
+        if (res.complete) {
+          locationProgressPercent.value = 100
+          locationProgressText.value = ''
+          if (locationProgressTimer) {
+            clearInterval(locationProgressTimer)
+            locationProgressTimer = null
+          }
+          // 重新获取已解析完成的数据
+          await fetchLatestLocations()
+        } else if (res.processing) {
+          locationProgressPercent.value = res.progress || 0
+          locationProgressText.value = `正在解析地址，已完成 ${locationProgressPercent.value}%`
+        } else {
+          // 无需异步处理，停止轮询
+          if (locationProgressTimer) {
+            clearInterval(locationProgressTimer)
+            locationProgressTimer = null
+          }
+        }
+      } catch (err) {
+        console.error('获取位置进度失败:', err)
+        if (locationProgressTimer) {
+          clearInterval(locationProgressTimer)
+          locationProgressTimer = null
+        }
+      }
+    }, 2000)
   }
 
   
@@ -797,6 +860,10 @@ const startPlayback = (path: any[]) => {
     }
   })
   onBeforeUnmount(() => {
+    if (locationProgressTimer) {
+      clearInterval(locationProgressTimer)
+      locationProgressTimer = null
+    }
     clearOverlays()
     if (map) {
       map.destroy()
