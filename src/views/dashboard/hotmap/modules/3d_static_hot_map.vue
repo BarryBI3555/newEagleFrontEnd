@@ -64,7 +64,6 @@
                   format="YYYY-MM-DD"
                   value-format="YYYY-MM-DD"
                   class="date-picker"
-                  @change="fetchHeatMap"
                 />
                 <div class="flex-c">
                   <el-button type="primary" @click="fetchHeatMap">筛选</el-button>
@@ -234,16 +233,11 @@
 
       window.heatData = data
 
-      // 更新热力图数据
-      if (heat) {
-        heat.setData(window.heatData)
-        // console.log(window.heatData)
-      }
-
       // 同时获取统计卡片数据
       await fetchStatsCardsData()
 
-      // 启动进度轮询，等待异步地理编码完成
+      // 启动进度轮询，等待异步地理编码完成后统一设置热力图数据
+      // 不在此时调用 heat.setData()，避免与轮询完成后的 setData 重复触发动画
       startProgressPolling()
     } catch (err: any) {
       error.value = '热力图加载失败：' + err.message
@@ -254,46 +248,54 @@
   /**
    * 轮询后端进度，解析完成后自动刷新热力图
    */
-  const startProgressPolling = () => {
-    const params = selectedDate.value ? { date: selectedDate.value } : {}
+  const pollProgress = async (params: Record<string, string | undefined>) => {
+    try {
+      const res: any = await axiosRequestHotmapProgress(params)
 
-    if (progressTimer) clearInterval(progressTimer)
-
-    progressTimer = setInterval(async () => {
-      try {
-        const res = await axiosRequestHotmapProgress(params)
-
-        if (res.complete) {
-          progressPercent.value = 100
-          progressText.value = ''
-          if (progressTimer) {
-            clearInterval(progressTimer)
-            progressTimer = null
-          }
-          // 重新获取完整数据
-          const data = await axiosRequestHeatMapData(params)
-          window.heatData = data
-          if (heat) {
-            heat.setData(window.heatData)
-          }
-        } else if (res.processing) {
-          progressPercent.value = res.progress || 0
-          progressText.value = `正在解析地址，已完成 ${progressPercent.value}%`
-        } else {
-          // 无需异步处理，停止轮询
-          if (progressTimer) {
-            clearInterval(progressTimer)
-            progressTimer = null
-          }
+      if (res.complete) {
+        progressPercent.value = 100
+        progressText.value = ''
+        if (progressTimer) {
+          clearInterval(progressTimer)
+          progressTimer = null
         }
-      } catch (err) {
-        console.error('获取进度失败:', err)
+        // 重新获取完整数据
+        const data: any[] = (await axiosRequestHeatMapData(params)) as any[]
+        window.heatData = data
+        if (heat) {
+          heat.setData(window.heatData)
+        }
+      } else if (res.processing) {
+        progressPercent.value = res.progress || 0
+        progressText.value = `正在解析地址，已完成 ${progressPercent.value}%`
+      } else {
+        // 无需异步处理，使用 fetchHeatMap 中已获取的数据渲染
+        if (heat && window.heatData) {
+          heat.setData(window.heatData)
+        }
         if (progressTimer) {
           clearInterval(progressTimer)
           progressTimer = null
         }
       }
-    }, 2000)
+    } catch (err) {
+      console.error('获取进度失败:', err)
+      if (progressTimer) {
+        clearInterval(progressTimer)
+        progressTimer = null
+      }
+    }
+  }
+
+  const startProgressPolling = () => {
+    const params = selectedDate.value ? { date: selectedDate.value } : {}
+
+    if (progressTimer) clearInterval(progressTimer)
+
+    // 立即执行首次检查，避免 2 秒空白等待
+    pollProgress(params)
+
+    progressTimer = setInterval(() => pollProgress(params), 2000)
   }
 
   // ==================== 行政区划功能 ====================
