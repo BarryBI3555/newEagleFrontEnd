@@ -595,7 +595,7 @@
       // await LogService.tableLog('人员当日工作量统计', '导出全部', tableApiParams.value)
       
       const res = await axiosRequestDailyWorkloadRy(tableApiParams.value)
-      const data = res.data as DailyWorkloadData[]
+      const data = (Array.isArray(res) ? res : []) as DailyWorkloadData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
         return

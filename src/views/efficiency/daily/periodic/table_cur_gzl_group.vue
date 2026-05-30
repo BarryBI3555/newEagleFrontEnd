@@ -440,10 +440,10 @@
       // await LogService.tableLog('小组当日工作量统计', '刷新', tableApiParams.value)
       
       const res = await axiosRequestDailyWorkloadGroup({ current: 1, size: 9999 })
-      if (res?.code === 200 && res.data?.length) {
-        allOriginData.value = [...res.data]
+      if (Array.isArray(res) && res.length) {
+        allOriginData.value = [...res]
         buildDeptGroupMap(allOriginData.value)
-        currentMaxTjTime.value = res.data[0].maxTjTime || ''
+        currentMaxTjTime.value = res[0].maxTjTime || ''
       }
       refreshData()
     } catch {
@@ -517,7 +517,7 @@
       // await LogService.tableLog('小组当日工作量统计', '导出全部', tableApiParams.value)
       
       const res = await axiosRequestDailyWorkloadGroup(tableApiParams.value)
-      const data = res.data as DailyWorkloadGroupData[]
+      const data = (Array.isArray(res) ? res : []) as DailyWorkloadGroupData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
         return
