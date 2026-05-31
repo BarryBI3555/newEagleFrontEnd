@@ -258,12 +258,30 @@
       "title": "成本监控"
     },
     "efficiency": {
-      "title": "数据报表",
+      "title": "数据通报",
       "personnel": "运营效率",
       "cases": "案件情况",
       "daily": {
         "title": "日常通报",
         "periodic": "周期通报"
+      },
+      "operations": {
+        "title": "运营效率",
+        "claimCycle": {
+          "title": "理赔周期"
+        },
+        "closeRate": {
+          "title": "结案率"
+        },
+        "daily": {
+          "title": "日常通报"
+        }
+      },
+      "costControl": {
+        "title": "成本管控",
+        "zhpfl": {
+          "title": "综合赔付率"
+        }
       }
     },
     

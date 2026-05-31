@@ -22,7 +22,7 @@
       <template #header>
         <div class="flex-cb">
           <!-- 表格标题 + 动态统计时间 -->
-          <h4 class="m-0">人员当日工作量统计【统计时间：{{ currentMaxTjTime }}】</h4>
+          <h4 class="m-0">人员当日工作量【统计时间：{{ currentMaxTjTime }}】</h4>
           <div class="flex gap-2">
             <ElTag v-if="tableError" type="danger">{{ tableError.message }}</ElTag>
             <ElTag v-else-if="loading" type="warning">加载中...</ElTag>
@@ -149,7 +149,7 @@
   import { axiosRequestDailyWorkloadRy } from '@/api/AllRequestMethods/index'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称（用于 devtools 调试）
-  defineOptions({ name: 'DailyWorkloadTable' })
+  defineOptions({ name: 'GzlRyTable' })
 
   // ==================== 1. 类型定义 ====================
   /** 人员每日工作量表格数据类型 */
@@ -240,12 +240,11 @@
   }
 
   /** 获取当前日期（YYYY-MM-DD） */
-  const today = new Date().toISOString().split('T')[0]
 
   /** 搜索表单绑定对象 */
   const searchFormState = ref({
-    startDate: today,
-    endDate: today,
+    startDate: '',
+    endDate: '',
     comName: '',
     groups: '',
     userName: ''
@@ -405,8 +404,8 @@
         const queryParams = {
           current: params.current,
           size: params.size,
-          startDate: tableApiParams.value.startDate ?? today,
-          endDate: tableApiParams.value.endDate ?? today,
+          startDate: tableApiParams.value.startDate || '',
+          endDate: tableApiParams.value.endDate || '',
           comName: tableApiParams.value.comName ?? '',
           groups: tableApiParams.value.groups ?? '',
           userName: tableApiParams.value.userName ?? ''
@@ -428,6 +427,12 @@
 
           if (tableResultData.length) {
             currentMaxTjTime.value = tableResultData[0].maxTjTime || ''
+            // 无日期条件时默认回填最新数据日期
+            if (!searchFormState.value.startDate && tableResultData[0].maxTjTime) {
+              const actualDate = tableResultData[0].maxTjTime.substring(0, 10)
+              searchFormState.value.startDate = actualDate
+              searchFormState.value.endDate = actualDate
+            }
           } else {
             currentMaxTjTime.value = ''
           }
@@ -500,7 +505,7 @@
   const handleRefresh = async () => {
     try {
       // 记录刷新日志
-      // await LogService.tableLog('人员当日工作量统计', '刷新', tableApiParams.value)
+      // await LogService.tableLog('人员当日工作量', '刷新', tableApiParams.value)
       
       const res = await axiosRequestDailyWorkloadRy(tableApiParams.value)      // axios 返回的已经是数据数组
       if (Array.isArray(res) && res.length) {
@@ -522,7 +527,7 @@
       if (searchBarRef.value) await searchBarRef.value.validate()
       tableApiParams.value = { ...tableApiParams.value, ...searchFormState.value }
       
-      // await LogService.tableLog('人员当日工作量统计', '搜索', searchFormState.value)
+      // await LogService.tableLog('人员当日工作量', '搜索', searchFormState.value)
       
       refreshData()
       ElNotification({ title: '提示', message: '搜索成功', type: 'success' })
@@ -536,8 +541,8 @@
    */
   const handleReset = () => {
     searchFormState.value = {
-      startDate: today,
-      endDate: today,
+      startDate: '',
+      endDate: '',
       comName: '',
       groups: '',
       userName: ''
@@ -557,7 +562,7 @@
       return
     }
     
-    // await LogService.tableLog('人员当日工作量统计', '导出当前页', tableApiParams.value)
+    // await LogService.tableLog('人员当日工作量', '导出当前页', tableApiParams.value)
 
     const exportData = data.map((item, index) => ({
       序号: index + 1,
@@ -581,8 +586,8 @@
 
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '人员当日工作量统计')
-    const fileName = `人员当日工作量统计_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+    XLSX.utils.book_append_sheet(wb, ws, '人员当日工作量')
+    const fileName = `人员当日工作量_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
     XLSX.writeFile(wb, fileName)
     ElNotification({ title: '成功', message: '导出成功', type: 'success' })
   }
@@ -592,7 +597,7 @@
    */
   const handleExportAll = async () => {
     try {
-      // await LogService.tableLog('人员当日工作量统计', '导出全部', tableApiParams.value)
+      // await LogService.tableLog('人员当日工作量', '导出全部', tableApiParams.value)
       
       const res = await axiosRequestDailyWorkloadRy(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as DailyWorkloadData[]
@@ -623,8 +628,8 @@
 
       const ws = XLSX.utils.json_to_sheet(exportData)
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, '人员当日工作量统计')
-      const fileName = `人员当日工作量统计_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+      XLSX.utils.book_append_sheet(wb, ws, '人员当日工作量')
+      const fileName = `人员当日工作量_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
       XLSX.writeFile(wb, fileName)
       ElNotification({ title: '成功', message: `${data.length} 条数据导出成功`, type: 'success' })
     } catch {

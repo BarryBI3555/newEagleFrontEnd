@@ -16,12 +16,12 @@
     />
 
     <!-- 表格卡片容器 -->
-    <ElCard class="flex-1 art-table-card" style="margin-top: 0;padding: 5px;">
+    <ElCard class="flex-1 art-table-card" style="margin-top: 0">
       <template #header>
         <div class="flex-cb">
           <!-- 表格标题 + 动态统计时间 -->
-          <h4 class="m-0">部门当日工作量统计【统计时间：{{ currentMaxTjTime }}】</h4>
-          <div class="flex gap-1">
+          <h4 class="m-0">人伤当日工作量【统计时间：{{ currentMaxTjTime }}】</h4>
+          <div class="flex gap-2">
             <ElTag v-if="tableError" type="danger">{{ tableError.message }}</ElTag>
             <ElTag v-else-if="loading" type="warning">加载中...</ElTag>
             <ElTag v-else type="success">{{ tableData.length }} 条数据</ElTag>
@@ -36,7 +36,6 @@
         @refresh="handleRefresh"
         layout="refresh,size,fullscreen,columns,settings"
         fullClass="art-table-card"
-        style=""
       >
         <template #left>
           <ElSpace wrap>
@@ -65,8 +64,7 @@
         :data="tableData"
         :columns="columns"
         :height="computedTableHeight"
-        :scrollbar-always-on="true"
-        empty-height="660px"
+        empty-height="580px"
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"
         @header-click="handleHeaderClick"
@@ -82,41 +80,23 @@
         <template #comName="{ row }">
           <span>{{ row.comName }}</span>
         </template>
-        <template #ckJsl="{ row }">
-          <span>{{ row.ckJsl }}</span>
-        </template>
-        <template #ckJslWcl="{ row }">
-          <span>{{ row.ckJslWcl }}</span>
-        </template>
-        <template #ckWcl="{ row }">
-          <span>{{ row.ckWcl }}</span>
-        </template>
-        <template #dsTjl="{ row }">
-          <span>{{ row.dsTjl }}</span>
-        </template>
-        <template #dsWcl="{ row }">
-          <span>{{ row.dsWcl }}</span>
-        </template>
-        <template #dsZfl="{ row }">
-          <span>{{ row.dsZfl }}</span>
-        </template>
         <template #shouGen="{ row }">
           <span>{{ row.shouGen }}</span>
         </template>
         <template #houGen="{ row }">
           <span>{{ row.houGen }}</span>
         </template>
-        <template #tiaoJie="{ row }">
-          <span>{{ row.tiaoJie }}</span>
+        <template #tiaojieZhuyuan="{ row }">
+          <span>{{ row.tiaojieZhuyuan }}</span>
         </template>
-        <template #ja="{ row }">
-          <span>{{ row.ja }}</span>
+        <template #tiaojieMenzheng="{ row }">
+          <span>{{ row.tiaojieMenzheng }}</span>
         </template>
-        <template #zl="{ row }">
-          <span>{{ row.zl }}</span>
+        <template #jieanZhuyuan="{ row }">
+          <span>{{ row.jieanZhuyuan }}</span>
         </template>
 
-        <!-- ID列：空值安全展示 -->
+        <!-- ID列 -->
         <template #id="{ row }">
           <span>{{ row.id !== null && row.id !== undefined ? row.id : '' }}</span>
         </template>
@@ -126,53 +106,41 @@
 </template>
 
 <script setup lang="ts">
-
   import { ref, computed, onMounted, nextTick } from 'vue'
   import { Download } from '@element-plus/icons-vue'
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
   import { LogService } from '@/services/logServices'
-  import { axiosRequestDailyWorkloadBm } from '@/api/AllRequestMethods/index'
+  import { axiosRequestDailyWorkloadRs } from '@/api/AllRequestMethods/index'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
-
-  // 组件名称（用于 devtools 调试）
-  defineOptions({ name: 'DailyWorkloadBmTable' })
+  // 组件名称
+  defineOptions({ name: 'GzlRsTable' })
 
   // ==================== 1. 类型定义 ====================
-  /** 部门每日工作量表格数据类型 */
-  interface DailyWorkloadBmData {
+  interface DailyWorkloadRsData {
     id: number | null | undefined
     comName: string // 部门
-    ckJsl: number // 查勘件数量
-    ckJslWcl: number // 查勘件未处理数量
-    ckWcl: number // 查勘未处理数量
-    dsTjl: number // 定损提交量
-    dsWcl: number // 定损未处理量
-    dsZfl: number // 定损支付量
-    shouGen: number // 首跟数量
-    houGen: number // 后跟数量
-    tiaoJie: number // 调解数量
-    ja: number // 结案数量
-    zl: number // 总工作量
-    tjDate: string | null // 统计日期
-    maxTjTime: string | null // 统计时间（用于标题展示）
+    shouGen: number // 首跟
+    houGen: number // 后跟
+    tiaojieZhuyuan: number // 调解-住院
+    tiaojieMenzheng: number // 调解-门诊
+    jieanZhuyuan: number // 结案-住院
+    tjDate: string | null
+    maxTjTime: string | null
   }
 
-  /** 下拉框基础选项类型 */
   interface SelectOption {
     label: string
     value: string
   }
 
-  /** 表格请求参数类型 */
   interface UseTableParams {
     current: number
     size: number
     [key: string]: any
   }
 
-  /** 表格接口返回结构 */
   interface UseTableResult<T> {
     records: T[]
     total: number
@@ -182,7 +150,7 @@
 
   // ==================== 2. 引用与状态变量 ====================
   const searchBarRef = ref<any>(null)
-  const allOriginData = ref<DailyWorkloadBmData[]>([])
+  const allOriginData = ref<DailyWorkloadRsData[]>([])
   const fullComOptions = ref<SelectOption[]>([])
   const currentMaxTjTime = ref<string>('')
   const isInitialized = ref(false)
@@ -194,11 +162,10 @@
     endDate: [{ required: false, message: '请选择结束日期', trigger: 'change' }]
   }
 
-  const today = new Date().toISOString().split('T')[0]
 
   const searchFormState = ref({
-    startDate: today,
-    endDate: today,
+    startDate: '',
+    endDate: '',
     comName: ''
   })
 
@@ -229,12 +196,12 @@
     }
   ])
 
-  // ==================== 4. 表格样式与高度 ====================
+  // ==================== 4. 表格样式 ====================
   const tableConfig = ref({ height: '100%', fixedHeight: false })
   const computedTableHeight = computed(() => (tableConfig.value.fixedHeight ? '660px' : 'calc(100vh - 330px)'))
 
-  // ==================== 5. 构建部门下拉 ====================
-  const buildDeptOptions = (data: DailyWorkloadBmData[]) => {
+  // ==================== 5. 构建部门下拉框 ====================
+  const buildDeptOptions = (data: DailyWorkloadRsData[]) => {
     if (fullComOptions.value.length) return
 
     const comSet = new Set<string>()
@@ -252,7 +219,7 @@
     })
   }
 
-  // ==================== 7. 表格核心 Hook ====================
+  // ==================== 7. 表格核心请求 ====================
   const {
     data: tableData,
     loading,
@@ -265,19 +232,20 @@
     columnChecks
   } = useTable({
     core: {
-      apiFn: async (params: UseTableParams): Promise<UseTableResult<DailyWorkloadBmData>> => {
+      apiFn: async (params: UseTableParams): Promise<UseTableResult<DailyWorkloadRsData>> => {
         const queryParams = {
           current: params.current,
           size: params.size,
-          startDate: tableApiParams.value.startDate ?? today,
-          endDate: tableApiParams.value.endDate ?? today,
+          startDate: tableApiParams.value.startDate || '',
+          endDate: tableApiParams.value.endDate || '',
           comName: tableApiParams.value.comName ?? ''
         }
 
-        const response = await axiosRequestDailyWorkloadBm(queryParams)
+        // 最终接口
+        const response = await axiosRequestDailyWorkloadRs(queryParams)
 
         // axios 返回的已经是 res.data.data（后端返回的数据部分）
-        let tableResultData: DailyWorkloadBmData[] = []
+        let tableResultData: DailyWorkloadRsData[] = []
         
         if (Array.isArray(response)) {
           tableResultData = response
@@ -290,6 +258,12 @@
 
           if (tableResultData.length) {
             currentMaxTjTime.value = tableResultData[0].maxTjTime || ''
+            // 无日期条件时默认回填最新数据日期
+            if (!searchFormState.value.startDate && tableResultData[0].maxTjTime) {
+              const actualDate = tableResultData[0].maxTjTime.substring(0, 10)
+              searchFormState.value.startDate = actualDate
+              searchFormState.value.endDate = actualDate
+            }
           } else {
             currentMaxTjTime.value = ''
           }
@@ -315,23 +289,17 @@
           fixed: 'left',
           sortable: true
         },
-        { prop: 'ckJsl', label: '查勘件数量', width: 120, align: 'center', sortable: true },
+        { prop: 'shouGen', label: '首跟数量', width: 120, align: 'center', sortable: true },
+        { prop: 'houGen', label: '后跟数量', width: 120, align: 'center', sortable: true },
+        { prop: 'tiaojieZhuyuan', label: '调解-住院', width: 130, align: 'center', sortable: true },
         {
-          prop: 'ckJslWcl',
-          label: '查勘件未处理数量',
-          width: 150,
+          prop: 'tiaojieMenzheng',
+          label: '调解-门诊',
+          width: 130,
           align: 'center',
           sortable: true
         },
-        { prop: 'ckWcl', label: '查勘未处理数量', width: 150, align: 'center', sortable: true },
-        { prop: 'dsTjl', label: '定损提交量', width: 120, align: 'center', sortable: true },
-        { prop: 'dsWcl', label: '定损未处理量', width: 120, align: 'center', sortable: true },
-        { prop: 'dsZfl', label: '定损支付量', width: 120, align: 'center', sortable: true },
-        { prop: 'shouGen', label: '首跟数量', width: 100, align: 'center', sortable: true },
-        { prop: 'houGen', label: '后跟数量', width: 100, align: 'center', sortable: true },
-        { prop: 'tiaoJie', label: '调解数量', width: 100, align: 'center', sortable: true },
-        { prop: 'ja', label: '结案数量', width: 100, align: 'center', sortable: true },
-        { prop: 'zl', label: '总量', width: 100, align: 'center', sortable: true }
+        { prop: 'jieanZhuyuan', label: '结案-住院', width: 130, align: 'center', sortable: true }
       ]
     },
     performance: {
@@ -342,20 +310,20 @@
     }
   })
 
-  // ==================== 8. 表格事件 ====================
+  // ==================== 8. 事件 ====================
   const tableRef = ref<any>(null)
   const handleSelectionChange = () => {}
   const handleRowClick = () => {}
   const handleHeaderClick = () => {}
   const handleSortChange = () => {}
 
-  // ==================== 9. 页面操作方法 ====================
+  // ==================== 9. 刷新 / 搜索 / 重置 ====================
   const handleRefresh = async () => {
     try {
-      // // 记录刷新日志
-      // await LogService.tableLog('部门当日工作量统计', '刷新', tableApiParams.value)
+      // 记录刷新日志
+      // await LogService.tableLog('人伤当日工作量统计', '刷新', tableApiParams.value)
       
-      const res = await axiosRequestDailyWorkloadBm({ current: 1, size: 9999 })
+      const res = await axiosRequestDailyWorkloadRs({ size: 9999 })
       if (Array.isArray(res) && res.length) {
         allOriginData.value = [...res]
         buildDeptOptions(allOriginData.value)
@@ -372,7 +340,7 @@
       if (searchBarRef.value) await searchBarRef.value.validate()
       tableApiParams.value = { ...tableApiParams.value, ...searchFormState.value }
       
-      // await LogService.tableLog('部门当日工作量统计', '搜索', searchFormState.value)
+      // await LogService.tableLog('人伤当日工作量统计', '搜索', searchFormState.value)
       
       refreshData()
       ElNotification({ title: '提示', message: '搜索成功', type: 'success' })
@@ -383,54 +351,48 @@
 
   const handleReset = () => {
     searchFormState.value = {
-      startDate: today,
-      endDate: today,
+      startDate: '',
+      endDate: '',
       comName: ''
     }
     tableApiParams.value = { current: 1, size: 20, ...searchFormState.value }
     refreshData()
   }
 
-  // ==================== 10. 导出功能 ====================
+  // ==================== 10. 导出 ====================
   const handleExportCurrent = async () => {
-    const data = tableData.value as DailyWorkloadBmData[]
+    const data = tableData.value as DailyWorkloadRsData[]
     if (!data.length) {
       ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
       return
     }
     
-    // await LogService.tableLog('部门当日工作量统计', '导出当前页', tableApiParams.value)
+    // await LogService.tableLog('人伤当日工作量统计', '导出当前页', tableApiParams.value)
 
     const exportData = data.map((item, index) => ({
       序号: index + 1,
       部门: item.comName,
-      查勘件数量: item.ckJsl,
-      查勘件未处理数量: item.ckJslWcl,
-      查勘未处理数量: item.ckWcl,
-      定损提交量: item.dsTjl,
-      定损未处理量: item.dsWcl,
-      定损支付量: item.dsZfl,
-      首跟数量: item.shouGen,
-      后跟数量: item.houGen,
-      调解数量: item.tiaoJie,
-      结案数量: item.ja,
-      总量: item.zl
+      首跟: item.shouGen,
+      后跟: item.houGen,
+      调解住院: item.tiaojieZhuyuan,
+      调解门诊: item.tiaojieMenzheng,
+      结案住院: item.jieanZhuyuan
     }))
 
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '部门当日工作量统计')
-    const fileName = `部门当日工作量统计_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+    XLSX.utils.book_append_sheet(wb, ws, '人伤当日工作量')
+    const fileName = `人伤当日工作量_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
     XLSX.writeFile(wb, fileName)
     ElNotification({ title: '成功', message: '导出成功', type: 'success' })
   }
 
   const handleExportAll = async () => {
     try {
-      // await LogService.tableLog('部门当日工作量统计', '导出全部', tableApiParams.value)
+      // await LogService.tableLog('人伤当日工作量统计', '导出全部', tableApiParams.value)
       
-      const res = await axiosRequestDailyWorkloadBm(tableApiParams.value)
-      const data = (Array.isArray(res) ? res : []) as DailyWorkloadBmData[]
+      const res = await axiosRequestDailyWorkloadRs(tableApiParams.value)
+      const data = (Array.isArray(res) ? res : []) as DailyWorkloadRsData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
         return
@@ -439,23 +401,17 @@
       const exportData = data.map((item, index) => ({
         序号: index + 1,
         部门: item.comName,
-        查勘件数量: item.ckJsl,
-        查勘件未处理数量: item.ckJslWcl,
-        查勘未处理数量: item.ckWcl,
-        定损提交量: item.dsTjl,
-        定损未处理量: item.dsWcl,
-        定损支付量: item.dsZfl,
-        首跟数量: item.shouGen,
-        后跟数量: item.houGen,
-        调解数量: item.tiaoJie,
-        结案数量: item.ja,
-        总量: item.zl
+        首跟: item.shouGen,
+        后跟: item.houGen,
+        调解住院: item.tiaojieZhuyuan,
+        调解门诊: item.tiaojieMenzheng,
+        结案住院: item.jieanZhuyuan
       }))
 
       const ws = XLSX.utils.json_to_sheet(exportData)
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, '部门当日工作量统计')
-      const fileName = `部门当日工作量统计_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+      XLSX.utils.book_append_sheet(wb, ws, '人伤当日工作量')
+      const fileName = `人伤当日工作量_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
       XLSX.writeFile(wb, fileName)
       ElNotification({ title: '成功', message: `${data.length} 条数据导出成功`, type: 'success' })
     } catch {
@@ -463,7 +419,6 @@
     }
   }
 
-  // ==================== 生命周期 ====================
   onMounted(async () => {
     await nextTick()
     if (searchBarRef.value) searchBarRef.value.$forceUpdate?.()
@@ -471,20 +426,7 @@
 </script>
 
 <style scoped>
-  .el-form-item {
-    height: 0px;
-    line-height: 0px;
-  }
   .custom-header:hover {
     color: var(--el-color-primary-light-3);
-    padding: 12px 12px 12px;
-  }
-
-  .demo-group .config-toggles .el-switch {
-    --el-switch-on-color: var(--el-color-primary);
-  }
-
-  .demo-group .performance-info .el-alert {
-    --el-alert-padding: 12px;
   }
 </style>
