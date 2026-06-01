@@ -173,6 +173,68 @@ export const efficiencyRoutes: AppRouteRecord = {
               }
             }
           ]
+        },
+        // ==================== 事故年赔付率 ====================
+        {
+          path: 'pflsgn',
+          name: 'Pflsgn',
+          meta: {
+            title: 'menus.efficiency.costControl.pflsgn.title',
+            keepAlive: false
+          },
+          children: [
+            {
+              path: 'pflsgn-zgs',
+              name: 'PflsgnZgs',
+              component: '/efficiency/cost-control/pflsgn/pflsgn-zgs',
+              meta: {
+                title: '事故年-支公司',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
+            },
+            {
+              path: 'pflsgn-khq',
+              name: 'PflsgnKhq',
+              component: '/efficiency/cost-control/pflsgn/pflsgn-khq',
+              meta: {
+                title: '事故年-客户群',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
+            },
+            {
+              path: 'pflsgn-xny',
+              name: 'PflsgnXny',
+              component: '/efficiency/cost-control/pflsgn/pflsgn-xny',
+              meta: {
+                title: '事故年-新能源',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
+            }
+          ]
+        },
+        // ==================== 案均赔款 ====================
+        {
+          path: 'anjun',
+          name: 'Anjun',
+          meta: {
+            title: 'menus.efficiency.costControl.anjun.title',
+            keepAlive: false
+          },
+          children: [
+            {
+              path: 'anjun-cx-zgs',
+              name: 'AnjunCxZgs',
+              component: '/efficiency/cost-control/anjun/anjun-cx-zgs',
+              meta: {
+                title: '案均赔款-支公司（车险）',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
+            }
+          ]
         }
       ]
     }
