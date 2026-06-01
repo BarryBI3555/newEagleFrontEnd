@@ -233,6 +233,26 @@ export const efficiencyRoutes: AppRouteRecord = {
                 keepAlive: false,
                 roles: ['R_ADMIN', 'R_SUPER']
               }
+            },
+            {
+              path: 'anjun-cx-khq',
+              name: 'AnjunCxKhq',
+              component: '/efficiency/cost-control/anjun/anjun-cx-khq',
+              meta: {
+                title: '案均赔款-客户群（车险）',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
+            },
+            {
+              path: 'anjun-cx-xny',
+              name: 'AnjunCxXny',
+              component: '/efficiency/cost-control/anjun/anjun-cx-xny',
+              meta: {
+                title: '案均赔款-新能源（车险）',
+                keepAlive: false,
+                roles: ['R_ADMIN', 'R_SUPER']
+              }
             }
           ]
         }

@@ -197,6 +197,16 @@ export const axiosRequestAnjunCxZgs = (params: Record<string, any>) => {
   return request.get({ url: 'api/anjun_cx_zgs/list', params })
 }
 
+/** 获取案均赔款-客户群（车险）数据 */
+export const axiosRequestAnjunCxKhq = (params: Record<string, any>) => {
+  return request.get({ url: 'api/anjun_cx_khq/list', params })
+}
+
+/** 获取案均赔款-新能源（车险）数据 */
+export const axiosRequestAnjunCxXny = (params: Record<string, any>) => {
+  return request.get({ url: 'api/anjun_cx_xny/list', params })
+}
+
 // ==================== 事故年赔付率相关 API ====================
 
 /**
