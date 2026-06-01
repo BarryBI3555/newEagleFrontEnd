@@ -11,6 +11,7 @@
       :show-reset-button="true"
       :show-search-button="true"
       :disabled-search-button="false"
+      
       @search="handleSearch"
       @reset="handleReset"
     />
@@ -65,6 +66,7 @@
         :columns="columns"
         :height="computedTableHeight"
         empty-height="580px"
+        merge-first-column
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"
         @header-click="handleHeaderClick"

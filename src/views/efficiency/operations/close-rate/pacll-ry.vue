@@ -56,6 +56,7 @@
         :height="tableHeight"
         :scrollbar-always-on="true"
         empty-height="660px"
+        merge-first-column
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       >
@@ -100,12 +101,20 @@
   interface UseTableParams { current: number; size: number; [key: string]: any }
   interface UseTableResult<T> { records: T[]; total: number; current: number; size: number }
 
-  // ==================== 2. 常量 ====================
+  // ==================== 2. 工具函数 ====================
+  const formatPercent = (val: any): string => {
+    if (val == null || val === '') return ''
+    const num = typeof val === 'string' ? parseFloat(val) : Number(val)
+    if (isNaN(num)) return String(val)
+    return (num * 100).toFixed(2) + '%'
+  }
+
+  // ==================== 3. 常量 ====================
   const tableHeight = 'calc(100vh - 330px)'
   const DEFAULT_PAGINATION = { current: 1, size: 20 }
   const DEFAULT_FORM = { tjDate: '', bm: '', groups: '', username: '' }
 
-  // ==================== 3. 状态 ====================
+  // ==================== 4. 状态 ====================
   const searchBarRef = ref<any>(null)
   const deptGroupMap = ref<DeptGroupMap>({})
   const currentMaxTjTime = ref<string>('')
@@ -113,7 +122,7 @@
   const comOptions = ref<SelectOption[]>([])
   const groupOptions = ref<SelectOption[]>([])
 
-  // ==================== 4. 搜索表单 ====================
+  // ==================== 5. 搜索表单 ====================
   const rules = { tjDate: [{ required: false, message: '请选择统计时间', trigger: 'change' }] }
   const searchFormState = ref({ ...DEFAULT_FORM })
   const tableApiParams = ref({ ...DEFAULT_PAGINATION, ...searchFormState.value })
@@ -125,7 +134,7 @@
     { key: 'username', label: '人员', type: 'input', props: { placeholder: '请输入人员名称' } }
   ])
 
-  // ==================== 5. 构建下拉 ====================
+  // ==================== 6. 构建下拉 ====================
   const sortGroupByCode = (groups: GroupOption[]) => {
     return groups.sort((a, b) => {
       const codeA = typeof a.groupsCode === 'string' ? parseInt(a.groupsCode) || 0 : a.groupsCode
@@ -160,7 +169,7 @@
     ElNotification({ title: '提示', message: `已加载：${comOptions.value.length} 个部门，共 ${groupCount} 个小组`, type: 'success' })
   }
 
-  // ==================== 6. 级联监听 ====================
+  // ==================== 7. 级联监听 ====================
   watch(() => searchFormState.value.bm, (newDept) => {
     if (newDept) {
       const sortedGroups = deptGroupMap.value[newDept] || []
@@ -169,7 +178,7 @@
     } else { groupOptions.value = []; searchFormState.value.groups = '' }
   }, { immediate: true })
 
-  // ==================== 7. 表格 Hook ====================
+  // ==================== 8. 表格 Hook ====================
   const { data: tableData, loading, error: tableError, pagination, refreshData, handleSizeChange, handleCurrentChange, columns, columnChecks } = useTable({
     core: {
       apiFn: async (params: UseTableParams): Promise<UseTableResult<PacllRyData>> => {
@@ -210,13 +219,13 @@
         { prop: 'wjajl', label: '未决案件量', width: 120, align: 'center', sortable: true },
         { prop: 'pacll', label: '赔案处理率', width: 110, align: 'center', sortable: true },
         { prop: 'bsrswjcl', label: '不涉人伤未决量', width: 150, align: 'center', sortable: true },
-        { prop: 'lajal', label: '立案结案率', width: 110, align: 'center', sortable: true }
+        { prop: 'lajal', label: '立案结案率', width: 110, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.lajal) }
       ]
     },
     performance: { enableCache: true, cacheTime: 5 * 60 * 1000, debounceTime: 300, maxCacheSize: 100 }
   })
 
-  // ==================== 8. 操作 ====================
+  // ==================== 9. 操作 ====================
   const handleRefresh = async () => {
     try {
       const res = await axiosRequestPacllRy({ current: 1, size: 9999 })
@@ -242,7 +251,7 @@
     refreshData()
   }
 
-  // ==================== 9. 导出 ====================
+  // ==================== 10. 导出 ====================
   const exportColumns = (item: PacllRyData, index: number) => ({
     序号: index + 1, 部门: item.bm, 人员: item.username, 工号: item.usercode,
     小组: item.groups,

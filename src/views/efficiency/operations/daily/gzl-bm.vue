@@ -66,6 +66,7 @@
         :columns="columns"
         :height="computedTableHeight"
         :scrollbar-always-on="true"
+        merge-first-column
         empty-height="660px"
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"

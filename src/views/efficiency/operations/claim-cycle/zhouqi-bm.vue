@@ -55,6 +55,7 @@
         :columns="columns"
         :height="tableHeight"
         :scrollbar-always-on="true"
+        merge-first-column
         empty-height="660px"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
