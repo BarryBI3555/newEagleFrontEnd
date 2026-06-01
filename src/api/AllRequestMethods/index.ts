@@ -129,6 +129,110 @@ export const axiosRequestDistrictChildren = (id: string) => {
   return request.get({ url: 'api/map/district/getchildren', params: { id } })
 }
 
+// ==================== 新增数据通报表格 API ====================
+
+/**
+ * 获取周期-市公司数据
+ * @param params 查询参数
+ */
+export const axiosRequestZhouqiQs = (params: Record<string, any>) => {
+  return request.get({ url: 'api/zhouqi_qs/list', params })
+}
+
+/**
+ * 获取周期-人员数据
+ * @param params 查询参数
+ */
+export const axiosRequestZhouqiRy = (params: Record<string, any>) => {
+  return request.get({ url: 'api/zhouqi_ry/list', params })
+}
+
+/**
+ * 获取周期-部门数据
+ * @param params 查询参数
+ */
+export const axiosRequestZhouqiBm = (params: Record<string, any>) => {
+  return request.get({ url: 'api/zhouqi_bm/list', params })
+}
+
+/**
+ * 获取综合赔付率-客户群数据
+ * @param params 查询参数
+ */
+export const axiosRequestZhpflKhq = (params: Record<string, any>) => {
+  return request.get({ url: 'api/zhpfl_khq/list', params })
+}
+
+/**
+ * 获取车险结案率-部门数据
+ * @param params 查询参数
+ */
+export const axiosRequestPacllBm = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pacll_bm/list', params })
+}
+
+/**
+ * 获取车险结案率-小组数据
+ * @param params 查询参数
+ */
+export const axiosRequestPacllXz = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pacll_xz/list', params })
+}
+
+/**
+ * 获取车险结案率-人员数据
+ * @param params 查询参数
+ */
+export const axiosRequestPacllRy = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pacll_ry/list', params })
+}
+
+// ==================== 案均赔款相关 API ====================
+
+/**
+ * 获取案均赔款-支公司（车险）数据
+ * @param params 查询参数
+ */
+export const axiosRequestAnjunCxZgs = (params: Record<string, any>) => {
+  return request.get({ url: 'api/anjun_cx_zgs/list', params })
+}
+
+/** 获取案均赔款-客户群（车险）数据 */
+export const axiosRequestAnjunCxKhq = (params: Record<string, any>) => {
+  return request.get({ url: 'api/anjun_cx_khq/list', params })
+}
+
+/** 获取案均赔款-新能源（车险）数据 */
+export const axiosRequestAnjunCxXny = (params: Record<string, any>) => {
+  return request.get({ url: 'api/anjun_cx_xny/list', params })
+}
+
+// ==================== 事故年赔付率相关 API ====================
+
+/**
+ * 获取事故年赔付率-支公司数据
+ * @param params 查询参数
+ */
+export const axiosRequestPflsgnZgs = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pflsgn_zgs/list', params })
+}
+
+/**
+ * 获取事故年赔付率-客户群数据
+ * @param params 查询参数
+ */
+export const axiosRequestPflsgnKhq = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pflsgn_khq/list', params })
+}
+
+/**
+ * 获取事故年赔付率-新能源数据
+ * @param params 查询参数
+ */
+export const axiosRequestPflsgnXny = (params: Record<string, any>) => {
+  return request.get({ url: 'api/pflsgn_xny/list', params })
+}
+
 // ==================== 操作日志相关 API ====================
 
 /**

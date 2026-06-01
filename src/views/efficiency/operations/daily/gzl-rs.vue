@@ -11,6 +11,7 @@
       :show-reset-button="true"
       :show-search-button="true"
       :disabled-search-button="false"
+      
       @search="handleSearch"
       @reset="handleReset"
     />
@@ -20,7 +21,7 @@
       <template #header>
         <div class="flex-cb">
           <!-- 表格标题 + 动态统计时间 -->
-          <h4 class="m-0">住院门诊调解结案统计【统计时间：{{ currentMaxTjTime }}】</h4>
+          <h4 class="m-0">人伤当日工作量【统计时间：{{ currentMaxTjTime }}】</h4>
           <div class="flex gap-2">
             <ElTag v-if="tableError" type="danger">{{ tableError.message }}</ElTag>
             <ElTag v-else-if="loading" type="warning">加载中...</ElTag>
@@ -65,6 +66,7 @@
         :columns="columns"
         :height="computedTableHeight"
         empty-height="580px"
+        merge-first-column
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"
         @header-click="handleHeaderClick"
@@ -115,7 +117,7 @@
   import { axiosRequestDailyWorkloadRs } from '@/api/AllRequestMethods/index'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称
-  defineOptions({ name: 'DailyWorkloadRsTable' })
+  defineOptions({ name: 'GzlRsTable' })
 
   // ==================== 1. 类型定义 ====================
   interface DailyWorkloadRsData {
@@ -162,11 +164,10 @@
     endDate: [{ required: false, message: '请选择结束日期', trigger: 'change' }]
   }
 
-  const today = new Date().toISOString().split('T')[0]
 
   const searchFormState = ref({
-    startDate: today,
-    endDate: today,
+    startDate: '',
+    endDate: '',
     comName: ''
   })
 
@@ -237,8 +238,8 @@
         const queryParams = {
           current: params.current,
           size: params.size,
-          startDate: tableApiParams.value.startDate ?? today,
-          endDate: tableApiParams.value.endDate ?? today,
+          startDate: tableApiParams.value.startDate || '',
+          endDate: tableApiParams.value.endDate || '',
           comName: tableApiParams.value.comName ?? ''
         }
 
@@ -259,6 +260,12 @@
 
           if (tableResultData.length) {
             currentMaxTjTime.value = tableResultData[0].maxTjTime || ''
+            // 无日期条件时默认回填最新数据日期
+            if (!searchFormState.value.startDate && tableResultData[0].maxTjTime) {
+              const actualDate = tableResultData[0].maxTjTime.substring(0, 10)
+              searchFormState.value.startDate = actualDate
+              searchFormState.value.endDate = actualDate
+            }
           } else {
             currentMaxTjTime.value = ''
           }
@@ -346,8 +353,8 @@
 
   const handleReset = () => {
     searchFormState.value = {
-      startDate: today,
-      endDate: today,
+      startDate: '',
+      endDate: '',
       comName: ''
     }
     tableApiParams.value = { current: 1, size: 20, ...searchFormState.value }
@@ -376,8 +383,8 @@
 
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '住院门诊调解结案统计')
-    const fileName = `住院门诊调解结案统计_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+    XLSX.utils.book_append_sheet(wb, ws, '人伤当日工作量')
+    const fileName = `人伤当日工作量_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
     XLSX.writeFile(wb, fileName)
     ElNotification({ title: '成功', message: '导出成功', type: 'success' })
   }
@@ -405,8 +412,8 @@
 
       const ws = XLSX.utils.json_to_sheet(exportData)
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, ws, '住院门诊调解结案统计')
-      const fileName = `住院门诊调解结案统计_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
+      XLSX.utils.book_append_sheet(wb, ws, '人伤当日工作量')
+      const fileName = `人伤当日工作量_全部_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`
       XLSX.writeFile(wb, fileName)
       ElNotification({ title: '成功', message: `${data.length} 条数据导出成功`, type: 'success' })
     } catch {
