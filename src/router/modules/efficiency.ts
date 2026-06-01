@@ -39,11 +39,11 @@ export const efficiencyRoutes: AppRouteRecord = {
               }
             },
             {
-              path: 'zhouqi-ry',
-              name: 'ZhouqiRy',
-              component: '/efficiency/operations/claim-cycle/zhouqi-ry',
+              path: 'zhouqi-bm',
+              name: 'ZhouqiBm',
+              component: '/efficiency/operations/claim-cycle/zhouqi-bm',
               meta: {
-                title: '周期-人员',
+                title: '周期-部门',
                 keepAlive: false,
                 roles: ['R_ADMIN', 'R_SUPER']
               }
