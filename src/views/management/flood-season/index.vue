@@ -66,6 +66,46 @@
                 </div>
               </div>
             </div>
+
+            <!-- 停车场详情面板（点击 marker 时显示） -->
+            <div v-if="selectedPlace" class="parking-detail-panel">
+              <div class="parking-detail-header">
+                <span class="parking-detail-title" :title="selectedPlace.pName">
+                  {{ selectedPlace.pName }}
+                </span>
+                <span class="parking-detail-close" title="关闭" @click="selectedPlace = null"
+                  >✕</span
+                >
+              </div>
+              <div class="parking-detail-body">
+                <div class="detail-row">
+                  <span class="detail-label">地址</span>
+                  <span class="detail-value" :title="selectedPlace.address">
+                    {{ selectedPlace.address || '—' }}
+                  </span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">区域</span>
+                  <span class="detail-value">{{ selectedPlace.region || '—' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">联系人</span>
+                  <span class="detail-value">{{ selectedPlace.conPerson || '—' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">电话</span>
+                  <span class="detail-value">{{ selectedPlace.tel || '—' }}</span>
+                </div>
+                <div v-if="selectedPlace.tel1" class="detail-row">
+                  <span class="detail-label">备用电话</span>
+                  <span class="detail-value">{{ selectedPlace.tel1 }}</span>
+                </div>
+                <div v-if="selectedPlace.remarks" class="detail-row">
+                  <span class="detail-label">备注</span>
+                  <span class="detail-value">{{ selectedPlace.remarks }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-if="mapLoading" class="map-loading">地图加载中...</div>
         </div>
@@ -94,13 +134,64 @@
         <!-- 标签页 -->
         <div class="right-block tabs-block">
           <ElTabs v-model="activeTab" class="rain-tabs">
+            <ElTabPane label="物资" name="items">
+              <div class="items-list" :style="{ height: tabsTableHeight + 'px' }">
+                <div v-if="items.length === 0" class="items-empty">暂无物资数据</div>
+                <div v-else class="items-rows">
+                  <div v-for="item in items" :key="item.id" class="items-row">
+                    <!-- Col 1: 主标题 + 副标题 -->
+                    <div class="col-title">
+                      <div class="row-name" :title="item.item">{{ item.item }}</div>
+                      <div class="row-subtitle" :title="item.type">{{ item.type }}</div>
+                    </div>
+                    <!-- Col 2: 总库存 -->
+                    <div class="col-stock">
+                      <span class="num-prefix">总</span>
+                      <span class="num-value num-muted">{{ item.inv }}</span>
+                    </div>
+                    <!-- Col 3: 状态徽章 -->
+                    <div class="col-status">
+                      <span
+                        :class="['status-badge', getStatusInfo(getProgressPercent(item)).className]"
+                      >
+                        {{ getStatusInfo(getProgressPercent(item)).text }}
+                      </span>
+                    </div>
+                    <!-- Col 4: 剩余 -->
+                    <div class="col-surplus">
+                      <span class="num-prefix">剩</span>
+                      <span
+                        :class="[
+                          'num-value',
+                          'num-highlight',
+                          getStatusInfo(getProgressPercent(item)).className
+                        ]"
+                        >{{ item.surplus }}</span
+                      >
+                    </div>
+                    <!-- Col 5: 进度条 + 百分比 -->
+                    <div class="col-progress">
+                      <div class="progress-track">
+                        <div
+                          :class="[
+                            'progress-fill',
+                            getStatusInfo(getProgressPercent(item)).className
+                          ]"
+                          :style="{ width: getProgressPercent(item) + '%' }"
+                        />
+                      </div>
+                      <span class="progress-label">{{ getProgressPercent(item) }}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ElTabPane>
             <ElTabPane label="施救单位" name="repair">
               <ElTable
                 :data="repairs"
-                stripe
                 size="small"
                 :height="tabsTableHeight"
-                class="tabs-table"
+                class="tabs-table tabs-table-dark"
               >
                 <ElTableColumn
                   prop="name"
@@ -123,28 +214,13 @@
             <ElTabPane label="中心对口联络机制" name="lianluo">
               <ElTable
                 :data="lianluos"
-                stripe
                 size="small"
                 :height="tabsTableHeight"
-                class="tabs-table"
+                class="tabs-table tabs-table-dark"
               >
                 <ElTableColumn prop="workGroup" label="工作组" min-width="140" align="center" />
                 <ElTableColumn prop="conPerson" label="联络人" min-width="120" align="center" />
                 <ElTableColumn prop="nameWorker" label="工作人员" min-width="120" align="center" />
-              </ElTable>
-            </ElTabPane>
-            <ElTabPane label="物资" name="items">
-              <ElTable
-                :data="items"
-                stripe
-                size="small"
-                :height="tabsTableHeight"
-                class="tabs-table"
-              >
-                <ElTableColumn prop="type" label="物资类型" min-width="120" align="center" />
-                <ElTableColumn prop="item" label="物资名称" min-width="120" align="center" />
-                <ElTableColumn prop="surplus" label="剩余" width="80" align="center" />
-                <ElTableColumn prop="inv" label="库存" width="80" align="center" />
               </ElTable>
             </ElTabPane>
           </ElTabs>
@@ -191,7 +267,7 @@
     Math.min(ZHIBAN_MAX, Math.max(180, Math.floor(cockpitBodyHeight.value * 0.36)))
   )
   const tabsTableHeight = computed(() =>
-    Math.min(TABS_MAX, Math.max(220, Math.floor(cockpitBodyHeight.value * 0.415)))
+    Math.min(TABS_MAX, Math.max(320, Math.floor(cockpitBodyHeight.value * 0.55)))
   )
 
   // ==================== 类型 ====================
@@ -249,7 +325,7 @@
 
   // ==================== 滚动文字 ====================
   const scrollText = ref('')
-  const activeTab = ref<'repair' | 'lianluo' | 'items'>('repair')
+  const activeTab = ref<'repair' | 'lianluo' | 'items'>('items')
 
   // ==================== 占位统计卡片 ====================
   const statsCards = [
@@ -292,6 +368,9 @@
   // ==================== 浮窗状态 ====================
   const isPlacePanelCollapsed = ref(false)
 
+  // ==================== 选中的停车场（点击 marker 后显示详情） ====================
+  const selectedPlace = ref<CarPlace | null>(null)
+
   // ==================== 地图 ====================
   const mapLoading = ref(true)
   let map: any = null
@@ -307,6 +386,9 @@
   }
 
   const toggleDistricts = () => regionManager?.toggleDistricts()
+
+  // 标记刚刚点击了 marker,用于阻止同一 tick 内 map.on('click') 关闭详情
+  let suppressMapClick = false
 
   // ==================== 拉取所有非地图数据 ====================
   const fetchAll = async () => {
@@ -342,6 +424,29 @@
     }
   }
 
+  // ==================== 物资状态计算 ====================
+  type StatusLevel = 'plenty' | 'normal' | 'low' | 'out'
+
+  interface StatusInfo {
+    className: StatusLevel
+    text: string
+  }
+
+  /** 根据剩余百分比推导状态 */
+  const getStatusInfo = (percent: number): StatusInfo => {
+    if (percent >= 70) return { className: 'plenty', text: '充足' }
+    if (percent >= 30) return { className: 'normal', text: '适中' }
+    if (percent >= 10) return { className: 'low', text: '低库存' }
+    return { className: 'out', text: '缺货' }
+  }
+
+  /** 进度百分比 = 剩余 / 库存，含零除与越界防御 */
+  const getProgressPercent = (item: Item): number => {
+    if (!item.inv || item.inv <= 0) return 0
+    const pct = Math.round((item.surplus / item.inv) * 100)
+    return Math.max(0, Math.min(100, pct))
+  }
+
   // ==================== 地图初始化 ====================
   const initMap = async () => {
     try {
@@ -357,6 +462,12 @@
         pitch: 0,
         center,
         mapStyleId: 'style1'
+      })
+
+      // 点击地图空白处关闭停车场详情
+      map.on('click', () => {
+        if (suppressMapClick) return
+        selectedPlace.value = null
       })
 
       regionManager = new AdministrativeRegionManager(map)
@@ -386,7 +497,7 @@
       id: String(p.id),
       styleId: 'parking',
       position: new window.TMap.LatLng(p.latitudeNew, p.longitudeNew),
-      properties: { ref: p }
+      properties: { data: p }
     }))
 
     if (markerLayer) markerLayer.setMap(null)
@@ -397,10 +508,26 @@
           width: 28,
           height: 32,
           anchor: { x: 14, y: 32 },
-          src: '/src/assets/images/icon/Location.png'
+          src: '/src/assets/images/icon/parkinglot.png'
         })
       },
       geometries
+    })
+
+    // 点击 marker 显示该停车场详情
+    markerLayer.on('click', (evt: any) => {
+      // 阻止冒泡，避免 map.on('click') 立即把面板关掉
+      evt?.originalEvent?.stopPropagation?.()
+      evt?.stopPropagation?.()
+      const place = evt.geometry?.properties?.data as CarPlace | undefined
+      if (place) {
+        suppressMapClick = true
+        selectedPlace.value = place
+        // 下一帧后释放,允许后续点击地图关闭
+        setTimeout(() => {
+          suppressMapClick = false
+        }, 0)
+      }
     })
 
     // 自适应视野
@@ -564,7 +691,7 @@
 
   .map-container {
     width: 100%;
-    height: 61vh;
+    height: 65vh;
     border-radius: 8px;
     position: relative;
   }
@@ -603,6 +730,113 @@
     background: rgba(31, 41, 55, 0.9);
     padding: 12px 24px;
     border-radius: 8px;
+  }
+
+  /* ==================== 停车场详情面板（点击 marker） ==================== */
+  .parking-detail-panel {
+    position: absolute;
+    left: 10px;
+    top: 50px;
+    z-index: 9999;
+    width: 300px;
+    max-height: calc(100% - 70px);
+    background: #1f2937;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color: #e5e7eb;
+    font-size: 13px;
+    overflow: hidden;
+    border: 1px solid #374151;
+    animation: parking-detail-in 0.2s ease-out;
+  }
+  @keyframes parking-detail-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .parking-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(31, 41, 55, 0.95);
+    border-bottom: 1px solid #374151;
+  }
+  .parking-detail-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f3f4f6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .parking-detail-close {
+    flex-shrink: 0;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 14px;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+  .parking-detail-close:hover {
+    background: #374151;
+    color: #fff;
+  }
+
+  .parking-detail-body {
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+  }
+  .parking-detail-body::-webkit-scrollbar {
+    width: 4px;
+  }
+  .parking-detail-body::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 10px;
+  }
+  .parking-detail-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #2d3a4a;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 6px 10px;
+    line-height: 1.5;
+    font-size: 12px;
+  }
+  .detail-label {
+    flex-shrink: 0;
+    min-width: 56px;
+    color: #9ca3af;
+  }
+  .detail-value {
+    flex: 1;
+    color: #f3f4f6;
+    word-break: break-all;
   }
 
   /* ==================== 停车场详情面板 ==================== */
@@ -791,5 +1025,267 @@
   .tabs-block {
     flex: 0 0 auto;
     min-height: 0;
+  }
+
+  /* ==================== ElTable 暗色主题（Tab 1/2）==================== */
+  .tabs-table-dark :deep(.el-table) {
+    background: transparent !important;
+    color: #f3f4f6;
+    --el-table-bg-color: transparent;
+    --el-table-tr-bg-color: transparent;
+    --el-table-header-bg-color: rgba(17, 24, 39, 0.85);
+    --el-table-header-text-color: #f3f4f6;
+    --el-table-border-color: rgba(156, 163, 175, 0.18);
+    --el-table-header-border-color: rgba(156, 163, 175, 0.25);
+    --el-table-row-hover-bg-color: rgba(31, 41, 55, 0.6);
+    --el-table-current-row-bg-color: transparent;
+  }
+
+  .tabs-table-dark :deep(.el-table th.el-table__cell) {
+    background: rgba(17, 24, 39, 0.85) !important;
+    color: #f3f4f6 !important;
+    border-bottom: 0.5px solid rgba(156, 163, 175, 0.3) !important;
+    font-weight: 600;
+  }
+
+  .tabs-table-dark :deep(.el-table td.el-table__cell) {
+    background: transparent !important;
+    border-bottom: 0.5px solid rgba(156, 163, 175, 0.12) !important;
+    color: #e5e7eb !important;
+  }
+
+  .tabs-table-dark :deep(.el-table tr:hover > td.el-table__cell) {
+    background: rgba(31, 41, 55, 0.7) !important;
+  }
+
+  .tabs-table-dark :deep(.el-table__empty-block) {
+    background: transparent;
+    min-height: 120px;
+  }
+  .tabs-table-dark :deep(.el-table__empty-text) {
+    color: #9ca3af !important;
+  }
+
+  .tabs-table-dark :deep(.el-table__body-wrapper::-webkit-scrollbar) {
+    width: 4px;
+  }
+  .tabs-table-dark :deep(.el-table__body-wrapper::-webkit-scrollbar-thumb) {
+    background: #4b5563;
+    border-radius: 10px;
+  }
+  .tabs-table-dark :deep(.el-table__body-wrapper::-webkit-scrollbar-track) {
+    background: transparent;
+  }
+
+  /* ==================== Tab 物资 - 卡片式列表 ==================== */
+  .items-list {
+    background: rgba(17, 17, 17, 0.4);
+    border: 0.5px solid rgba(156, 163, 175, 0.18);
+    border-radius: 8px;
+    padding: 8px 6px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .items-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  .items-list::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 10px;
+  }
+  .items-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .items-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .items-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(31, 41, 55, 0.6);
+    border: 0.5px solid rgba(156, 163, 175, 0.12);
+    border-radius: 8px;
+    color: #f3f4f6;
+    font-size: 13px;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
+    min-width: 0;
+  }
+
+  .items-row:hover {
+    background: rgba(31, 41, 55, 0.85);
+    border-color: rgba(156, 163, 175, 0.25);
+  }
+
+  /* ===== 5 列布局 ===== */
+  .col-title {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .col-stock {
+    flex: 0 0 80px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 3px;
+  }
+  .col-status {
+    flex: 0 0 90px;
+    display: flex;
+    justify-content: center;
+  }
+  .col-surplus {
+    flex: 0 0 80px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  /* ===== 数字单元 (总/剩 区分) ===== */
+  .num-prefix {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .num-value {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .num-value.num-muted {
+    color: #9ca3af;
+    font-weight: 500;
+  }
+  .num-value.num-highlight {
+    color: #f3f4f6;
+  }
+  /* 剩余数字随状态着色，与状态徽章呼应 */
+  .num-value.num-highlight.plenty {
+    color: #34d399;
+  }
+  .num-value.num-highlight.normal {
+    color: #d1d5db;
+  }
+  .num-value.num-highlight.low {
+    color: #fbbf24;
+  }
+  .num-value.num-highlight.out {
+    color: #f87171;
+  }
+  .col-progress {
+    flex: 0 0 150px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ===== 标题列 ===== */
+  .row-name {
+    font-weight: 600;
+    color: #f3f4f6;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-subtitle {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ===== 状态徽章 ===== */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 9999px;
+    white-space: nowrap;
+    line-height: 1.5;
+  }
+  .status-badge.plenty {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+  .status-badge.normal {
+    background: rgba(156, 163, 175, 0.18);
+    color: #d1d5db;
+    border: 1px solid rgba(156, 163, 175, 0.35);
+  }
+  .status-badge.low {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+  }
+  .status-badge.out {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  /* ===== 进度条 ===== */
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(75, 85, 99, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .progress-fill.plenty {
+    background: #10b981;
+  }
+  .progress-fill.normal {
+    background: #9ca3af;
+  }
+  .progress-fill.low {
+    background: #f59e0b;
+  }
+  .progress-fill.out {
+    background: #ef4444;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* ===== 空态 ===== */
+  .items-empty {
+    height: 100%;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 13px;
   }
 </style>
