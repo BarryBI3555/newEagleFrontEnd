@@ -11,11 +11,29 @@ export const managementRoutes: AppRouteRecord = {
   },
   children: [
     {
-      path: 'index',
-      name: 'ManagementIndex',
-      component: '/test/test_index',
+      path: 'flood-season',
+      name: 'FloodSeason',
+      component: '/management/flood-season',
       meta: {
-        title: 'menus.management.title',
+        title: 'menus.management.floodSeason',
+        keepAlive: false
+      }
+    },
+    {
+      path: 'car-cockpit',
+      name: 'CarCockpit',
+      component: '/management/car-cockpit',
+      meta: {
+        title: 'menus.management.carCockpit',
+        keepAlive: false
+      }
+    },
+    {
+      path: 'non-car-cockpit',
+      name: 'NonCarCockpit',
+      component: '/management/non-car-cockpit',
+      meta: {
+        title: 'menus.management.nonCarCockpit',
         keepAlive: false
       }
     }

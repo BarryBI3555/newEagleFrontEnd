@@ -14,7 +14,7 @@
       @reset="handleReset"
     />
 
-    <ElCard class="flex-1 art-table-card" style="margin-top: 0;padding: 5px;">
+    <ElCard class="flex-1 art-table-card" style="margin-top: 0; padding: 5px">
       <template #header>
         <div class="flex-cb">
           <h4 class="m-0">车险结案率(部门)【统计时间：{{ currentMaxTjTime }}】</h4>
@@ -86,16 +86,28 @@
     xzl: number
     yjl: number
     wjl: number
-    pacll: number
+    pacll: string
     rswj: number
     lajal: number
     rsZb: number
     maxTjTime: string | null
   }
 
-  interface SelectOption { label: string; value: string }
-  interface UseTableParams { current: number; size: number; [key: string]: any }
-  interface UseTableResult<T> { records: T[]; total: number; current: number; size: number }
+  interface SelectOption {
+    label: string
+    value: string
+  }
+  interface UseTableParams {
+    current: number
+    size: number
+    [key: string]: any
+  }
+  interface UseTableResult<T> {
+    records: T[]
+    total: number
+    current: number
+    size: number
+  }
 
   // ==================== 2. 工具函数 ====================
   const formatPercent = (val: any): string => {
@@ -122,25 +134,52 @@
   const tableApiParams = ref({ ...DEFAULT_PAGINATION, ...searchFormState.value })
 
   const searchItems = computed(() => [
-    { key: 'tjDate', label: '统计时间', type: 'date', props: { placeholder: '选择统计时间', valueFormat: 'YYYY-MM-DD' } },
-    { key: 'comname', label: '部门', type: 'select', props: { placeholder: '请选择部门', options: comOptions.value, clearable: true } }
+    {
+      key: 'tjDate',
+      label: '统计时间',
+      type: 'date',
+      props: { placeholder: '选择统计时间', valueFormat: 'YYYY-MM-DD' }
+    },
+    {
+      key: 'comname',
+      label: '部门',
+      type: 'select',
+      props: { placeholder: '请选择部门', options: comOptions.value, clearable: true }
+    }
   ])
 
   // ==================== 6. 构建下拉 ====================
   const buildDeptOptions = (data: PacllBmData[]) => {
     if (comOptions.value.length) return
     const comSet = new Set<string>()
-    data.forEach((item) => { if (item.comname) comSet.add(item.comname) })
+    data.forEach((item) => {
+      if (item.comname) comSet.add(item.comname)
+    })
     comOptions.value = Array.from(comSet).map((name) => ({ label: name, value: name }))
-    ElNotification({ title: '提示', message: `已加载：${comOptions.value.length} 个部门`, type: 'success' })
+    ElNotification({
+      title: '提示',
+      message: `已加载：${comOptions.value.length} 个部门`,
+      type: 'success'
+    })
   }
 
   // ==================== 7. 表格 Hook ====================
-  const { data: tableData, loading, error: tableError, pagination, refreshData, handleSizeChange, handleCurrentChange, columns, columnChecks } = useTable({
+  const {
+    data: tableData,
+    loading,
+    error: tableError,
+    pagination,
+    refreshData,
+    handleSizeChange,
+    handleCurrentChange,
+    columns,
+    columnChecks
+  } = useTable({
     core: {
       apiFn: async (params: UseTableParams): Promise<UseTableResult<PacllBmData>> => {
         const queryParams = {
-          current: params.current, size: params.size,
+          current: params.current,
+          size: params.size,
           tjDate: tableApiParams.value.tjDate || '',
           comname: tableApiParams.value.comname ?? ''
         }
@@ -157,26 +196,59 @@
             if (!searchFormState.value.tjDate && tableResultData[0].maxTjTime) {
               searchFormState.value.tjDate = tableResultData[0].maxTjTime.substring(0, 10)
             }
-          } else { currentMaxTjTime.value = '' }
+          } else {
+            currentMaxTjTime.value = ''
+          }
         }
         const start = (params.current - 1) * params.size
-        return { records: tableResultData.slice(start, start + params.size), total: tableResultData.length, current: params.current, size: params.size }
+        return {
+          records: tableResultData.slice(start, start + params.size),
+          total: tableResultData.length,
+          current: params.current,
+          size: params.size
+        }
       },
       apiParams: tableApiParams.value,
       immediate: true,
       columnsFactory: () => [
         { prop: 'comcode', label: '部门代码', width: 110, align: 'center', sortable: true },
-        { prop: 'comname', label: '部门名称', minWidth: 200, align: 'center', fixed: 'left', sortable: true },
+        {
+          prop: 'comname',
+          label: '部门名称',
+          minWidth: 200,
+          align: 'center',
+          fixed: 'left',
+          sortable: true
+        },
         { prop: 'xzl', label: '新增量', width: 90, align: 'center', sortable: true },
         { prop: 'yjl', label: '已决量', width: 90, align: 'center', sortable: true },
         { prop: 'wjl', label: '未决量', width: 90, align: 'center', sortable: true },
         { prop: 'pacll', label: '赔案处理率', width: 110, align: 'center', sortable: true },
         { prop: 'rswj', label: '涉人伤未决案件量', width: 150, align: 'center', sortable: true },
-        { prop: 'lajal', label: '立案结案率', width: 110, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.lajal) },
-        { prop: 'rsZb', label: '人伤未决占比', width: 120, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.rsZb) }
+        {
+          prop: 'lajal',
+          label: '立案结案率',
+          width: 110,
+          align: 'center',
+          sortable: true,
+          formatter: (row: any) => formatPercent(row.lajal)
+        },
+        {
+          prop: 'rsZb',
+          label: '人伤未决占比',
+          width: 120,
+          align: 'center',
+          sortable: true,
+          formatter: (row: any) => formatPercent(row.rsZb)
+        }
       ]
     },
-    performance: { enableCache: true, cacheTime: 5 * 60 * 1000, debounceTime: 300, maxCacheSize: 100 }
+    performance: {
+      enableCache: true,
+      cacheTime: 5 * 60 * 1000,
+      debounceTime: 300,
+      maxCacheSize: 100
+    }
   })
 
   // ==================== 8. 操作 ====================
@@ -188,7 +260,9 @@
         currentMaxTjTime.value = res[0].maxTjTime || ''
       }
       refreshData()
-    } catch { refreshData() }
+    } catch {
+      refreshData()
+    }
   }
 
   const handleSearch = async () => {
@@ -196,7 +270,9 @@
       await searchBarRef.value?.validate()
       tableApiParams.value = { ...tableApiParams.value, ...searchFormState.value }
       refreshData()
-    } catch { /* validation failed */ }
+    } catch {
+      /* validation failed */
+    }
   }
 
   const handleReset = () => {
@@ -207,16 +283,26 @@
 
   // ==================== 9. 导出 ====================
   const exportColumns = (item: PacllBmData, index: number) => ({
-    序号: index + 1, 部门代码: item.comcode, 部门名称: item.comname,
-    新增量: item.xzl, 已决量: item.yjl, 未决量: item.wjl,
-    赔案处理率: item.pacll, 涉人伤未决案件量: item.rswj, 立案结案率: item.lajal, 人伤未决占比: item.rsZb
+    序号: index + 1,
+    部门代码: item.comcode,
+    部门名称: item.comname,
+    新增量: item.xzl,
+    已决量: item.yjl,
+    未决量: item.wjl,
+    赔案处理率: item.pacll,
+    涉人伤未决案件量: item.rswj,
+    立案结案率: item.lajal,
+    人伤未决占比: item.rsZb
   })
 
   const dateSuffix = () => new Date().toLocaleDateString().replace(/\//g, '-')
 
   const handleExportCurrent = () => {
     const data = tableData.value as PacllBmData[]
-    if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
+    if (!data.length) {
+      ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
+      return
+    }
     const exportData = data.map(exportColumns)
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
@@ -229,20 +315,35 @@
     try {
       const res = await axiosRequestPacllBm(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as PacllBmData[]
-      if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
+      if (!data.length) {
+        ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
+        return
+      }
       const exportData = data.map(exportColumns)
       const ws = XLSX.utils.json_to_sheet(exportData)
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, '车险结案率(部门)')
       XLSX.writeFile(wb, `车险结案率(部门)_全部_${dateSuffix()}.xlsx`)
       ElNotification({ title: '成功', message: `${data.length} 条数据导出成功`, type: 'success' })
-    } catch { ElNotification({ title: '错误', message: '导出失败', type: 'error' }) }
+    } catch {
+      ElNotification({ title: '错误', message: '导出失败', type: 'error' })
+    }
   }
 </script>
 
 <style scoped>
-  .el-form-item { height: 0px; line-height: 0px; }
-  .custom-header:hover { color: var(--el-color-primary-light-3); padding: 12px 12px 12px; }
-  .demo-group .config-toggles .el-switch { --el-switch-on-color: var(--el-color-primary); }
-  .demo-group .performance-info .el-alert { --el-alert-padding: 12px; }
+  .el-form-item {
+    height: 0px;
+    line-height: 0px;
+  }
+  .custom-header:hover {
+    color: var(--el-color-primary-light-3);
+    padding: 12px 12px 12px;
+  }
+  .demo-group .config-toggles .el-switch {
+    --el-switch-on-color: var(--el-color-primary);
+  }
+  .demo-group .performance-info .el-alert {
+    --el-alert-padding: 12px;
+  }
 </style>

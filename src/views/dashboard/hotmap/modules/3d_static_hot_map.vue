@@ -128,6 +128,8 @@
   const progressPercent = ref(0)
   const progressText = ref('')
   let progressTimer: ReturnType<typeof setInterval> | null = null
+  // 上一次轮询时缓存中的数据量；用于判断后端是否合并了新批次
+  let lastCachedCount = -1
 
   // 统计卡片默认数据
   const statsCards = ref([
@@ -246,7 +248,10 @@
   }
 
   /**
-   * 轮询后端进度，解析完成后自动刷新热力图
+   * 轮询后端进度，按批次刷新热力图：
+   * - complete=true 时拉取最终完整数据；
+   * - processing=true 时，若缓存有新增（cachedCount 增长），立即拉取最新缓存并渲染，
+   *   这样用户能在第一批 50 条解析完成时立刻看到热力点，无需等到 100% 完成。
    */
   const pollProgress = async (params: Record<string, string | undefined>) => {
     try {
@@ -265,9 +270,19 @@
         if (heat) {
           heat.setData(window.heatData)
         }
+        lastCachedCount = res.cachedCount ?? data.length
       } else if (res.processing) {
         progressPercent.value = res.progress || 0
         progressText.value = `正在解析地址，已完成 ${progressPercent.value}%`
+
+        // 当后端缓存出现新批次时（每合并 50 条触发一次），立即拉取并刷新地图
+        const currentCachedCount = res.cachedCount ?? 0
+        if (heat && currentCachedCount !== lastCachedCount) {
+          lastCachedCount = currentCachedCount
+          const data: any[] = (await axiosRequestHeatMapData(params)) as any[]
+          window.heatData = data
+          heat.setData(window.heatData)
+        }
       } else {
         // 无需异步处理，使用 fetchHeatMap 中已获取的数据渲染
         if (heat && window.heatData) {
@@ -291,6 +306,8 @@
     const params = selectedDate.value ? { date: selectedDate.value } : {}
 
     if (progressTimer) clearInterval(progressTimer)
+    // 重置上次缓存量计数，避免上一个日期的残留值影响新日期的首轮判断
+    lastCachedCount = -1
 
     // 立即执行首次检查，避免 2 秒空白等待
     pollProgress(params)

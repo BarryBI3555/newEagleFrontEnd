@@ -14,7 +14,7 @@
       @reset="handleReset"
     />
 
-    <ElCard class="flex-1 art-table-card" style="margin-top: 0;padding: 5px;">
+    <ElCard class="flex-1 art-table-card" style="margin-top: 0; padding: 5px">
       <template #header>
         <div class="flex-cb">
           <h4 class="m-0">车险结案率(小组)【统计时间：{{ currentMaxTjTime }}】</h4>
@@ -89,17 +89,33 @@
     yjl: number
     wjl: number
     wjlRs: number
-    pacll: number
+    pacll: string
     lajal: number
     rsPp: number
     maxTjTime: string | null
   }
 
-  interface SelectOption { label: string; value: string }
-  interface GroupOption extends SelectOption { groupsCode: string | number }
-  interface DeptGroupMap { [deptName: string]: GroupOption[] }
-  interface UseTableParams { current: number; size: number; [key: string]: any }
-  interface UseTableResult<T> { records: T[]; total: number; current: number; size: number }
+  interface SelectOption {
+    label: string
+    value: string
+  }
+  interface GroupOption extends SelectOption {
+    groupsCode: string | number
+  }
+  interface DeptGroupMap {
+    [deptName: string]: GroupOption[]
+  }
+  interface UseTableParams {
+    current: number
+    size: number
+    [key: string]: any
+  }
+  interface UseTableResult<T> {
+    records: T[]
+    total: number
+    current: number
+    size: number
+  }
 
   // ==================== 2. 工具函数 ====================
   const formatPercent = (val: any): string => {
@@ -128,9 +144,29 @@
   const tableApiParams = ref({ ...DEFAULT_PAGINATION, ...searchFormState.value })
 
   const searchItems = computed(() => [
-    { key: 'tjDate', label: '统计时间', type: 'date', props: { placeholder: '选择统计时间', valueFormat: 'YYYY-MM-DD' } },
-    { key: 'comname', label: '部门', type: 'select', props: { placeholder: '请选择部门', options: comOptions.value, clearable: true } },
-    { key: 'groups', label: '小组', type: 'select', props: { placeholder: '请选择小组', options: groupOptions.value, clearable: true, disabled: !searchFormState.value.comname } }
+    {
+      key: 'tjDate',
+      label: '统计时间',
+      type: 'date',
+      props: { placeholder: '选择统计时间', valueFormat: 'YYYY-MM-DD' }
+    },
+    {
+      key: 'comname',
+      label: '部门',
+      type: 'select',
+      props: { placeholder: '请选择部门', options: comOptions.value, clearable: true }
+    },
+    {
+      key: 'groups',
+      label: '小组',
+      type: 'select',
+      props: {
+        placeholder: '请选择小组',
+        options: groupOptions.value,
+        clearable: true,
+        disabled: !searchFormState.value.comname
+      }
+    }
   ])
 
   // ==================== 6. 构建下拉 ====================
@@ -156,33 +192,64 @@
         if (!tempDeptGroupMap[item.comname]) tempDeptGroupMap[item.comname] = []
         const exists = tempDeptGroupMap[item.comname].some((g) => g.value === item.groups)
         if (!exists) {
-          tempDeptGroupMap[item.comname].push({ label: item.groups, value: item.groups, groupsCode: item.groupscode })
-          if (!seenGroups.has(item.groups)) { seenGroups.add(item.groups); groupCount++ }
+          tempDeptGroupMap[item.comname].push({
+            label: item.groups,
+            value: item.groups,
+            groupsCode: item.groupscode
+          })
+          if (!seenGroups.has(item.groups)) {
+            seenGroups.add(item.groups)
+            groupCount++
+          }
         }
       }
     })
 
     comOptions.value = Array.from(comSet).map((name) => ({ label: name, value: name }))
-    Object.keys(tempDeptGroupMap).forEach((dept) => { tempDeptGroupMap[dept] = sortGroupByCode(tempDeptGroupMap[dept]) })
+    Object.keys(tempDeptGroupMap).forEach((dept) => {
+      tempDeptGroupMap[dept] = sortGroupByCode(tempDeptGroupMap[dept])
+    })
     deptGroupMap.value = tempDeptGroupMap
-    ElNotification({ title: '提示', message: `已加载：${comOptions.value.length} 个部门，共 ${groupCount} 个小组`, type: 'success' })
+    ElNotification({
+      title: '提示',
+      message: `已加载：${comOptions.value.length} 个部门，共 ${groupCount} 个小组`,
+      type: 'success'
+    })
   }
 
   // ==================== 7. 级联监听 ====================
-  watch(() => searchFormState.value.comname, (newDept) => {
-    if (newDept) {
-      const sortedGroups = deptGroupMap.value[newDept] || []
-      groupOptions.value = sortedGroups.map((g) => ({ label: g.label, value: g.value }))
-      searchFormState.value.groups = ''
-    } else { groupOptions.value = []; searchFormState.value.groups = '' }
-  }, { immediate: true })
+  watch(
+    () => searchFormState.value.comname,
+    (newDept) => {
+      if (newDept) {
+        const sortedGroups = deptGroupMap.value[newDept] || []
+        groupOptions.value = sortedGroups.map((g) => ({ label: g.label, value: g.value }))
+        searchFormState.value.groups = ''
+      } else {
+        groupOptions.value = []
+        searchFormState.value.groups = ''
+      }
+    },
+    { immediate: true }
+  )
 
   // ==================== 8. 表格 Hook ====================
-  const { data: tableData, loading, error: tableError, pagination, refreshData, handleSizeChange, handleCurrentChange, columns, columnChecks } = useTable({
+  const {
+    data: tableData,
+    loading,
+    error: tableError,
+    pagination,
+    refreshData,
+    handleSizeChange,
+    handleCurrentChange,
+    columns,
+    columnChecks
+  } = useTable({
     core: {
       apiFn: async (params: UseTableParams): Promise<UseTableResult<PacllXzData>> => {
         const queryParams = {
-          current: params.current, size: params.size,
+          current: params.current,
+          size: params.size,
           tjDate: tableApiParams.value.tjDate || '',
           comname: tableApiParams.value.comname ?? '',
           groups: tableApiParams.value.groups ?? ''
@@ -200,27 +267,74 @@
             if (!searchFormState.value.tjDate && tableResultData[0].maxTjTime) {
               searchFormState.value.tjDate = tableResultData[0].maxTjTime.substring(0, 10)
             }
-          } else { currentMaxTjTime.value = '' }
+          } else {
+            currentMaxTjTime.value = ''
+          }
         }
         const start = (params.current - 1) * params.size
-        return { records: tableResultData.slice(start, start + params.size), total: tableResultData.length, current: params.current, size: params.size }
+        return {
+          records: tableResultData.slice(start, start + params.size),
+          total: tableResultData.length,
+          current: params.current,
+          size: params.size
+        }
       },
       apiParams: tableApiParams.value,
       immediate: true,
       columnsFactory: () => [
-        { prop: 'comname', label: '部门', minWidth: 180, align: 'center', fixed: 'left', sortable: true },
-        { prop: 'groups', label: '小组', width: 150, align: 'center', fixed: 'left', sortable: true },
+        {
+          prop: 'comname',
+          label: '部门',
+          minWidth: 180,
+          align: 'center',
+          fixed: 'left',
+          sortable: true
+        },
+        {
+          prop: 'groups',
+          label: '小组',
+          width: 150,
+          align: 'center',
+          fixed: 'left',
+          sortable: true
+        },
         { prop: 'groupscode', label: '小组代码', width: 120, align: 'center', sortable: true },
         { prop: 'xzl', label: '新增量', width: 90, align: 'center', sortable: true },
         { prop: 'yjl', label: '已决量', width: 90, align: 'center', sortable: true },
         { prop: 'wjl', label: '未决量', width: 90, align: 'center', sortable: true },
         { prop: 'wjlRs', label: '人伤未决量', width: 120, align: 'center', sortable: true },
-        { prop: 'pacll', label: '赔案处理率', width: 110, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.pacll) },
-        { prop: 'lajal', label: '立案结案率', width: 110, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.lajal) },
-        { prop: 'rsPp', label: '人伤未决占比', width: 120, align: 'center', sortable: true, formatter: (row: any) => formatPercent(row.rsPp) }
+        {
+          prop: 'pacll',
+          label: '赔案处理率',
+          width: 110,
+          align: 'center',
+          sortable: true,
+          formatter: (row: any) => formatPercent(row.pacll)
+        },
+        {
+          prop: 'lajal',
+          label: '立案结案率',
+          width: 110,
+          align: 'center',
+          sortable: true,
+          formatter: (row: any) => formatPercent(row.lajal)
+        },
+        {
+          prop: 'rsPp',
+          label: '人伤未决占比',
+          width: 120,
+          align: 'center',
+          sortable: true,
+          formatter: (row: any) => formatPercent(row.rsPp)
+        }
       ]
     },
-    performance: { enableCache: true, cacheTime: 5 * 60 * 1000, debounceTime: 300, maxCacheSize: 100 }
+    performance: {
+      enableCache: true,
+      cacheTime: 5 * 60 * 1000,
+      debounceTime: 300,
+      maxCacheSize: 100
+    }
   })
 
   // ==================== 9. 操作 ====================
@@ -232,7 +346,9 @@
         currentMaxTjTime.value = res[0].maxTjTime || ''
       }
       refreshData()
-    } catch { refreshData() }
+    } catch {
+      refreshData()
+    }
   }
 
   const handleSearch = async () => {
@@ -240,7 +356,9 @@
       await searchBarRef.value?.validate()
       tableApiParams.value = { ...tableApiParams.value, ...searchFormState.value }
       refreshData()
-    } catch { /* validation failed */ }
+    } catch {
+      /* validation failed */
+    }
   }
 
   const handleReset = () => {
@@ -251,16 +369,27 @@
 
   // ==================== 10. 导出 ====================
   const exportColumns = (item: PacllXzData, index: number) => ({
-    序号: index + 1, 部门: item.comname, 小组: item.groups, 小组代码: item.groupscode,
-    新增量: item.xzl, 已决量: item.yjl, 未决量: item.wjl,
-    人伤未决量: item.wjlRs, 赔案处理率: item.pacll, 立案结案率: item.lajal, 人伤未决占比: item.rsPp
+    序号: index + 1,
+    部门: item.comname,
+    小组: item.groups,
+    小组代码: item.groupscode,
+    新增量: item.xzl,
+    已决量: item.yjl,
+    未决量: item.wjl,
+    人伤未决量: item.wjlRs,
+    赔案处理率: item.pacll,
+    立案结案率: item.lajal,
+    人伤未决占比: item.rsPp
   })
 
   const dateSuffix = () => new Date().toLocaleDateString().replace(/\//g, '-')
 
   const handleExportCurrent = () => {
     const data = tableData.value as PacllXzData[]
-    if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
+    if (!data.length) {
+      ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
+      return
+    }
     const exportData = data.map(exportColumns)
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
@@ -273,20 +402,35 @@
     try {
       const res = await axiosRequestPacllXz(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as PacllXzData[]
-      if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
+      if (!data.length) {
+        ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
+        return
+      }
       const exportData = data.map(exportColumns)
       const ws = XLSX.utils.json_to_sheet(exportData)
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, '车险结案率(小组)')
       XLSX.writeFile(wb, `车险结案率(小组)_全部_${dateSuffix()}.xlsx`)
       ElNotification({ title: '成功', message: `${data.length} 条数据导出成功`, type: 'success' })
-    } catch { ElNotification({ title: '错误', message: '导出失败', type: 'error' }) }
+    } catch {
+      ElNotification({ title: '错误', message: '导出失败', type: 'error' })
+    }
   }
 </script>
 
 <style scoped>
-  .el-form-item { height: 0px; line-height: 0px; }
-  .custom-header:hover { color: var(--el-color-primary-light-3); padding: 12px 12px 12px; }
-  .demo-group .config-toggles .el-switch { --el-switch-on-color: var(--el-color-primary); }
-  .demo-group .performance-info .el-alert { --el-alert-padding: 12px; }
+  .el-form-item {
+    height: 0px;
+    line-height: 0px;
+  }
+  .custom-header:hover {
+    color: var(--el-color-primary-light-3);
+    padding: 12px 12px 12px;
+  }
+  .demo-group .config-toggles .el-switch {
+    --el-switch-on-color: var(--el-color-primary);
+  }
+  .demo-group .performance-info .el-alert {
+    --el-alert-padding: 12px;
+  }
 </style>

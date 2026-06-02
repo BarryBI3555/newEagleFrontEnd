@@ -246,6 +246,12 @@
       "title": "Dashboard",
       "console": "Console"
     },
+    "management": {
+      "title": "Management",
+      "floodSeason": "Flood Season Cockpit",
+      "carCockpit": "Auto Insurance Cockpit",
+      "nonCarCockpit": "Non-Auto Insurance Cockpit"
+    },
     "result": {
       "title": "Result Page",
       "success": "Success",

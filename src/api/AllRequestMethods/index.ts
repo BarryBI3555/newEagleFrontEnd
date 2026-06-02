@@ -250,3 +250,33 @@ export const axiosRequestQueryOperationLogs = (params: Record<string, any>) => {
 export const axiosRequestWriteOperationLog = (operation: string) => {
   return request.post({ url: 'api/log/write', data: { operation } })
 }
+
+// ==================== 汛期驾驶舱相关 API ====================
+
+const rain = (path: string) => () => request.get({ url: `api/rain/${path}` })
+
+/** 每日等级预警（滚动播放） */
+export const axiosRequestRainDayLevel = rain('dayLevel')
+
+/** 固定停车点位（地图 marker） */
+export const axiosRequestRainCarPlace = rain('carPlace')
+
+/** 值班信息 */
+export const axiosRequestRainZhiban = rain('zhiban')
+
+/** 施救单位 */
+export const axiosRequestRainRepair = rain('repair')
+
+/** 中心对口联络机制 */
+export const axiosRequestRainLianluo = rain('lianluo')
+
+/** 物资 */
+export const axiosRequestRainItems = rain('items')
+
+/**
+ * 预警对应措施（按日期）
+ * @param params 查询参数 { date?: 'YYYY-MM-DD' }，缺省时后端取今天
+ */
+export const axiosRequestRainLevelProcess = (params: Record<string, any> = {}) => {
+  return request.get({ url: 'api/rain/levelProcess', params })
+}
