@@ -684,9 +684,9 @@
             width: 36,
             height: 36,
             anchor: { x: 18, y: 18 },
-            faceTo: 'map',
+            // faceTo: 'map',
             rotate: 0,
-            src: '/src/assets/images/icon/Car.png'  // 使用正确的大小写文件名
+            src: '/src/assets/images/icon/people.png'  // 使用正确的大小写文件名
           })
         },
         geometries: [{ id: 'car', styleId: 'car', position: path[0] }]
