@@ -252,7 +252,10 @@
       "hotmap": "案件量热图"
     },
     "management": {
-      "title": "管理驾驶舱"
+      "title": "管理驾驶舱",
+      "floodSeason": "汛期驾驶舱",
+      "carCockpit": "车险驾驶舱",
+      "nonCarCockpit": "非车驾驶舱"
     },
     "cost": {
       "title": "成本监控"

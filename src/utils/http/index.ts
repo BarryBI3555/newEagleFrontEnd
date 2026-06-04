@@ -15,6 +15,7 @@
  */
 
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { useUserStore } from '@/store/modules/user'
 import { ApiStatus } from './status'
 import { HttpError, handleError, showError, showSuccess } from './error'
 import { $t } from '@/locales'
@@ -63,21 +64,8 @@ const axiosInstance = axios.create({
 /** 请求拦截器 */
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
-    const url = request.url || ''
-    
-    // 如果是完整URL（以http://或https://开头），不添加Authorization头（可能是外部API）
-    // 并且设置baseURL为空以避免拼接
-    const isFullUrl = url.startsWith('http://') || url.startsWith('https://')
-    if (isFullUrl) {
-      request.baseURL = ''
-    } else {
-      // 从 localStorage 获取 token
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        // 根据后端要求，使用Bearer token格式
-        request.headers.set('Authorization', `Bearer ${token}`)
-      }
-    }
+    const { accessToken } = useUserStore()
+    if (accessToken) request.headers.set('Authorization', accessToken)
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')
@@ -96,12 +84,12 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<BaseResponse>) => {
     const data = response.data
-    
+
     // 如果后端直接返回数组（没有code字段），直接返回
     if (Array.isArray(data)) {
       return response
     }
-    
+
     // 处理标准格式 { code, msg, data }
     if ('code' in data) {
       const { code, msg } = data
@@ -109,9 +97,8 @@ axiosInstance.interceptors.response.use(
       if (code === ApiStatus.unauthorized) handleUnauthorizedError(msg)
       throw createHttpError(msg || $t('httpMsg.requestFailed'), code)
     }
-    
+
     // 处理其他格式（如腾讯地图API的 { status, result } 格式）
-    // 对于没有code字段的响应，直接返回
     return response
   },
   (error) => {
@@ -152,9 +139,7 @@ function resetUnauthorizedError() {
 /** 退出登录函数 */
 function logOut() {
   setTimeout(() => {
-    localStorage.clear()
-    sessionStorage.clear()
-    window.location.href = '/'
+    useUserStore().logOut()
   }, LOGOUT_DELAY)
 }
 
@@ -205,30 +190,23 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
   try {
     const res = await axiosInstance.request<BaseResponse<T>>(config)
 
+    // 如果后端直接返回数组，返回数组本身
+    if (Array.isArray(res.data)) {
+      return res.data as T
+    }
+
     // 显示成功消息
     if (config.showSuccessMessage && res.data.msg) {
       showSuccess(res.data.msg)
     }
 
-    // 如果后端直接返回数组，返回数组本身
-    if (Array.isArray(res.data)) {
-      return res.data as T
-    }
-    
     // 处理标准格式 { code, msg, data }
     const responseData = res.data
     if ('code' in responseData && 'data' in responseData) {
-      // 如果 data 是对象且包含 list 字段（分页格式），返回整个 data 对象
-      // 这样可以保留分页信息（total, page, pageSize）
-      if (responseData.data && typeof responseData.data === 'object') {
-        return responseData.data as T
-      }
-      // 否则返回 data 字段
       return responseData.data as T
     }
-    
+
     // 处理其他格式（如腾讯地图API的 { status, result } 格式）
-    // 直接返回整个响应数据
     return responseData as T
   } catch (error) {
     if (error instanceof HttpError && error.code !== ApiStatus.unauthorized) {
