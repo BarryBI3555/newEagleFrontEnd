@@ -502,7 +502,7 @@ export default [
         {
           name: 'Dashboard',
           path: '/dashboard',
-          component: '/index/index',
+          component: '/index/pages/index',
           meta: {
             title: 'menus.dashboard.title',
             icon: 'ri:pie-chart-line'
@@ -524,7 +524,7 @@ export default [
         {
           path: '/system',
           name: 'System',
-          component: '/index/index',
+          component: '/index/pages/index',
           meta: {
             title: 'menus.system.title',
             icon: 'ri:user-3-line'
@@ -594,7 +594,7 @@ export default [
         {
           path: '/result',
           name: 'Result',
-          component: '/index/index',
+          component: '/index/pages/index',
           meta: {
             title: 'menus.result.title',
             icon: 'ri:checkbox-circle-line'
@@ -625,7 +625,7 @@ export default [
         {
           path: '/exception',
           name: 'Exception',
-          component: '/index/index',
+          component: '/index/pages/index',
           meta: {
             title: 'menus.exception.title',
             icon: 'ri:error-warning-line'

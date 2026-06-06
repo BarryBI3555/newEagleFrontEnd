@@ -72,6 +72,9 @@
   const isFullPage = computed(() => route.matched.some((r) => r.meta?.isFullPage))
   const prevIsFullPage = ref(isFullPage.value)
 
+  // 检查当前路由是否需要撑满主内容区（保留侧边栏与 header，但容器本身需要 flex 撑满）
+  const isFullContent = computed(() => route.matched.some((r) => r.meta?.isFullContent))
+
   // 切换动画名称：首次加载、从全屏返回时不使用动画
   const actualTransition = computed(() => {
     if (isFirstLoad.value) return ''
@@ -106,9 +109,20 @@
             zIndex: 2500,
             background: 'var(--default-bg-color)'
           }
-        : {
-            maxWidth: containerWidth.value
-          }
+        : isFullContent.value
+          ? {
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              maxWidth: '100%',
+              flex: 1,
+              minHeight: 0,
+              margin: 0,
+              padding: 0
+            }
+          : {
+              maxWidth: containerWidth.value
+            }
   )
 
   const contentStyle = computed(

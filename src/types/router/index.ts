@@ -60,6 +60,8 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   activePath?: string
   /** 是否为全屏页面 */
   isFullPage?: boolean
+  /** 是否撑满主内容区（保留侧边栏与 header，但容器本身用 flex 撑满） */
+  isFullContent?: boolean
   /** 是否为权限按钮行 */
   isAuthButton?: boolean
   /** 权限标识 */

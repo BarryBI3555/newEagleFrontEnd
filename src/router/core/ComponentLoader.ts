@@ -46,14 +46,14 @@ export class ComponentLoader {
    * 加载布局组件
    */
   loadLayout(): () => Promise<any> {
-    return () => import('@/views/index/index.vue')
+    return () => import('@/views/index/pages/index.vue')
   }
 
   /**
    * 加载 iframe 组件
    */
   loadIframe(): () => Promise<any> {
-    return () => import('@/views/outside/Iframe.vue')
+    return () => import('@/views/outside/pages/Iframe.vue')
   }
 
   /**

@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const operationLogRoutes: AppRouteRecord = {
     name:'OperationLog',
     path:'/operationLog',
-    component:'/index/index',
+    component:'/index/pages/index',
     meta:{
         title:'menus.operationlog.title',
         icon:'material-symbols-light:document-scanner-outline',
@@ -13,7 +13,7 @@ export const operationLogRoutes: AppRouteRecord = {
         {
             path:'table',
             name:'OperationLogTable',
-            component:'/operationLog/OperationLogTable',
+            component:'/operationLog/pages/OperationLogTable',
             meta:{
                 title:'menus.operationlog.subtitle',
                 keepAlive: false,

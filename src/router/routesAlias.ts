@@ -1,3 +1,3 @@
 export enum RoutesAlias {
-  Layout = '/index/index'
+  Layout = '/index/pages/index'
 }
