@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const dataTableRoutes: AppRouteRecord = {
     name:'DataTable',
     path:'/datatable',
-    component:'/index/index',
+    component:'/index/pages/index',
     meta:{
         title:'menus.datatable.title',
         icon:'ri:table-line',
@@ -13,7 +13,7 @@ export const dataTableRoutes: AppRouteRecord = {
         {
             path:'index',
             name:'DataTableIndex',
-            component:'/datatable/index',
+            component:'/datatable/pages/datatable',
             meta:{
                 title:'menus.datatable.subtitle',
                 keepAlive: false

@@ -244,13 +244,15 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "console": "Console"
+      "console": "Console",
+      "personalmap": "Person Map",
+      "hotmap": "Heat Map"
     },
     "management": {
-      "title": "Management",
-      "floodSeason": "Flood Season Cockpit",
+      "title": "Management Cockpit",
       "carCockpit": "Auto Insurance Cockpit",
-      "nonCarCockpit": "Non-Auto Insurance Cockpit"
+      "nonCarCockpit": "Non-Auto Insurance Cockpit",
+      "floodSeason": "Flood Season Cockpit"
     },
     "result": {
       "title": "Result Page",

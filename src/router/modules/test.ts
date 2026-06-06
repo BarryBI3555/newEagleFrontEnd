@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const testRoutes: AppRouteRecord = {
     path: '/test',
     name: 'test',
-    component: '/index/index',
+    component: '/index/pages/index',
     meta: {
         title: 'menus.test.title',
         icon: 'ri:test-tube-line',
@@ -13,7 +13,7 @@ export const testRoutes: AppRouteRecord = {
         {
             path: 'test1',
             name: 'test1',
-            component: '/test/test_index',
+            component: '/test/pages/test-index',
             meta: {
                 title: 'menus.test.user',
                 isHide: false,

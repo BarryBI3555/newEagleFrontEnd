@@ -236,15 +236,7 @@
   import { MapLoader } from '@/api/MapLoader/mapLoader'
   import { AdministrativeRegionManager } from '@/api/AdministrativeRegionmanager/AdministrativeRegionmanager'
   import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
-  import {
-    axiosRequestRainDayLevel,
-    axiosRequestRainCarPlace,
-    axiosRequestRainZhiban,
-    axiosRequestRainRepair,
-    axiosRequestRainLianluo,
-    axiosRequestRainItems,
-    axiosRequestRainLevelProcess
-  } from '@/api/AllRequestMethods/index'
+  import { RainCockpit } from '@views/management/api'
 
   defineOptions({ name: 'FloodSeasonCockpit' })
 
@@ -394,13 +386,13 @@
   const fetchAll = async () => {
     try {
       const [dayLevels, places, z, r, l, it, lp] = await Promise.all([
-        axiosRequestRainDayLevel() as Promise<DayLevel[]>,
-        axiosRequestRainCarPlace() as Promise<CarPlace[]>,
-        axiosRequestRainZhiban() as Promise<Zhiban[]>,
-        axiosRequestRainRepair() as Promise<Repair[]>,
-        axiosRequestRainLianluo() as Promise<Lianluo[]>,
-        axiosRequestRainItems() as Promise<Item[]>,
-        axiosRequestRainLevelProcess() as Promise<LevelProcess[]>
+        RainCockpit.getDayLevels() as Promise<DayLevel[]>,
+        RainCockpit.getCarPlaces() as Promise<CarPlace[]>,
+        RainCockpit.getZhibans() as Promise<Zhiban[]>,
+        RainCockpit.getRepairs() as Promise<Repair[]>,
+        RainCockpit.getLianluos() as Promise<Lianluo[]>,
+        RainCockpit.getItems() as Promise<Item[]>,
+        RainCockpit.getLevelProcesses() as Promise<LevelProcess[]>
       ])
 
       // 滚动文字

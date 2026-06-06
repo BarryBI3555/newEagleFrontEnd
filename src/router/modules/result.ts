@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const resultRoutes: AppRouteRecord = {
   path: '/result',
   name: 'Result',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.result.title',
     icon: 'ri:checkbox-circle-line'
@@ -12,7 +12,7 @@ export const resultRoutes: AppRouteRecord = {
     {
       path: 'success',
       name: 'ResultSuccess',
-      component: '/result/success',
+      component: '/result/pages/success',
       meta: {
         title: 'menus.result.success',
         icon: 'ri:checkbox-circle-line',
@@ -22,7 +22,7 @@ export const resultRoutes: AppRouteRecord = {
     {
       path: 'fail',
       name: 'ResultFail',
-      component: '/result/fail',
+      component: '/result/pages/fail',
       meta: {
         title: 'menus.result.fail',
         icon: 'ri:close-circle-line',

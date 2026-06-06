@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const profileRoutes: AppRouteRecord = {
   name: 'Profile',
   path: '/profile',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.profile.title',
     icon: 'ri:user-line',
@@ -13,7 +13,7 @@ export const profileRoutes: AppRouteRecord = {
     {
       path: 'index',
       name: 'ProfileIndex',
-      component: '/test/test_index',
+      component: '/test/pages/test-index',
       meta: {
         title: 'menus.profile.title',
         keepAlive: false

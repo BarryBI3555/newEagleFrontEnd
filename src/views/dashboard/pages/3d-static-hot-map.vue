@@ -12,7 +12,7 @@
               :md="6"
               v-for="card in statsCards"
               :key="card.id"
-              class="mb-10"
+              class="mb-0"
             >
               <div class="card-wrapper">
                 <div
@@ -425,11 +425,15 @@
     width: 100%;
     height: 100%;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .map-container {
     width: 100%;
-    height: 88%;
+    flex: 1;
+    min-height: 0;
     border-radius: 8px;
     position: relative;
   }
@@ -439,8 +443,9 @@
     flex-direction: column;
     gap: 15px;
     /* 控件和卡片之间的间距 */
-    margin-bottom: 10px;
-    /* 与地图保持10px距离 */
+    margin-bottom: 2px;
+    /* 与地图保持小距离 */
+    flex-shrink: 0;
   }
 
   .search-date-row {

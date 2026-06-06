@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const listRoutes: AppRouteRecord = {
   name: 'List',
   path: '/list',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.list.title',
     icon: 'ri:file-list-line',
@@ -13,7 +13,7 @@ export const listRoutes: AppRouteRecord = {
     {
       path: 'index',
       name: 'ListIndex',
-      component: '/dashboard/personnel',
+      component: '/dashboard/pages/card-list',
       meta: {
         title: 'menus.list.title',
         keepAlive: false

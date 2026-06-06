@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const systemRoutes: AppRouteRecord = {
   path: '/system',
   name: 'System',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.system.title',
     icon: 'ri:user-3-line',

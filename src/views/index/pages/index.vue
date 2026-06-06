@@ -25,5 +25,5 @@
 </script>
 
 <style lang="scss" scoped>
-  @use './style';
+  @use '../style';
 </style>

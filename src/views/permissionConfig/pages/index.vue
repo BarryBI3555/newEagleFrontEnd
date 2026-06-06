@@ -138,7 +138,7 @@
 
 <script setup lang="ts">
   import { Plus } from '@element-plus/icons-vue'
-  import { usePermissionStore } from './modules/permission-store'
+  import { usePermissionStore } from '../modules/permission-store'
   import { useMenuStore } from '@/store/modules/menu'
   import { formatMenuTitle } from '@/utils/router'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'

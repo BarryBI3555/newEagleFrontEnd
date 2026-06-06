@@ -43,7 +43,7 @@ export class MapLoader {
         
         // 直接加载腾讯地图API，不再通过后端代理
         // const timestamp = new Date().getTime();
-        const mapKey = import.meta.env.VITE_TENCENT_MAP_API_KEY || 'PYUBZ-EC2EH-YUJD6-WF7OL-ID6XF-IABZ2'; // 使用环境变量存储密钥
+        const mapKey = import.meta.env.VITE_TENCENT_MAP_API_KEY || 'GJOBZ-WQTCG-ZTYQG-QP6SD-OYXZH-HMFXV'; // 使用环境变量存储密钥
         const tencentMapUrl = ` https://map.qq.com/api/gljs?v=1.exp&key=${mapKey}&libraries=visualization`;
         
         // 创建并注入脚本标签直接加载腾讯地图API
