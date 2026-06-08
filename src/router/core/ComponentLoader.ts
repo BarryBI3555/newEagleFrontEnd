@@ -53,7 +53,7 @@ export class ComponentLoader {
    * 加载 iframe 组件
    */
   loadIframe(): () => Promise<any> {
-    return () => import('@/views/outside/pages/Iframe.vue')
+    return () => import('@/views/outside/pages/iframe.vue')
   }
 
   /**

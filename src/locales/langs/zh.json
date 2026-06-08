@@ -254,8 +254,7 @@
     "management": {
       "title": "管理驾驶舱",
       "carCockpit": "车险驾驶舱",
-      "nonCarCockpit": "非车险驾驶舱",
-      "floodSeason": "汛期驾驶舱"
+      "nonCarCockpit": "非车险驾驶舱"
     },
     "cost": {
       "title": "成本监控"
@@ -320,10 +319,6 @@
     "datatable": {
       "title": "数据表格",
       "subtitle": "数据图表"
-    },
-    "operationlog": {
-      "title": "日志",
-      "subtitle": "用户操作日志"
     },
     "permissionconfig": {
       "title": "权限配置",
