@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { PacllRy } from '../../../api'
+  import { PacllRy } from '../../api'
 
   defineOptions({ name: 'PacllRyTable' })
 

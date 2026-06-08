@@ -28,20 +28,12 @@
               <!-- 返回主页按钮 -->
               <div class="district-and-home-btns">
                 <!-- 行政区划相关 -->
-                <ArtSvgIcon
-                  icon="ri:grid-line"
-                  class="home-icon-btn"
-                  @click="toggleDistricts"
-                  title="显示/隐藏行政区划"
-                  position="left"
-                />
-                <ArtSvgIcon
-                  icon="ri:home-line"
-                  class="home-icon-btn"
-                  @click="goToHomePage"
-                  title="返回主页"
-                  position="right"
-                />
+                <div class="home-icon-btn" @click="toggleDistricts" title="显示/隐藏行政区划">
+                  <ArtSvgIcon icon="ri:grid-line" />
+                </div>
+                <div class="home-icon-btn" @click="goToHomePage" title="返回主页">
+                  <ArtSvgIcon icon="ri:home-line" />
+                </div>
               </div>
             </div>
             <!-- 第二行：日期选择器 + 片区下拉框 -->
@@ -937,20 +929,25 @@
     min-width: 130px;
     max-width: 225px;
   }
-  .home-img-btn {
-    width: 25px;
-    height: 25px;
+  .home-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
     transition: all 0.25s ease;
-    opacity: 0.85;
-    filter: brightness(0) invert(1);
     flex-shrink: 0;
-    border: 1px solid #9ca3af; /* 添加边框 */
-    border-radius: 4px; /* 可选：添加圆角 */
-    padding: 4px; /* 可选：添加内边距 */
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 6px;
+    color: #60a5fa;
+    font-size: 18px;
   }
-  .home-img-btn:hover {
-    opacity: 1;
+  .home-icon-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+    color: #93c5fd;
     transform: scale(1.08);
   }
 

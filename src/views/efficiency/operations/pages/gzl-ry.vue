@@ -147,7 +147,7 @@
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
   import { LogService } from '@/services/logServices'
-  import { DailyWorkloadRy } from '../../../api'
+  import { DailyWorkloadRy } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称（用于 devtools 调试）
   defineOptions({ name: 'GzlRyTable' })

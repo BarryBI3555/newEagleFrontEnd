@@ -72,7 +72,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { AnjunCxXny } from '../../../api'
+  import { AnjunCxXny } from '../../api'
 
   defineOptions({ name: 'AnjunCxXnyTable' })
 

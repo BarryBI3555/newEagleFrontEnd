@@ -489,6 +489,11 @@
     border-radius: 8px;
   }
 
+  .district-icon-btn {
+    font-size: 20px;
+    pointer-events: none;
+  }
+
   .district-img-btn {
     /* position: absolute; */
     width: 25px;
@@ -544,6 +549,25 @@
     top: 10px;
     left: 10px;
     z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px solid rgba(59, 130, 246, 0.5);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-size: 20px;
+    transition: all 0.25s ease;
+  }
+  .bottom-in-map:hover {
+    background: rgba(59, 130, 246, 0.4);
+    border-color: #3b82f6;
+    color: #93c5fd;
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
   }
 
   .custom-height {

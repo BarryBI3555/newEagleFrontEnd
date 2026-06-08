@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { ZhouqiBm } from '../../../api'
+  import { ZhouqiBm } from '../../api'
 
   defineOptions({ name: 'ZhouqiBmTable' })
 

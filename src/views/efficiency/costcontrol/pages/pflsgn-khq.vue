@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { PflsgnKhq } from '../../../api'
+  import { PflsgnKhq } from '../../api'
 
   defineOptions({ name: 'PflsgnKhqTable' })
 
