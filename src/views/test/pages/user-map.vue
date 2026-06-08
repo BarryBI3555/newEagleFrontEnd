@@ -182,6 +182,29 @@
     }
   }
 
+  // ==================== SVG 地图标记图标（替代 PNG 图片） ====================
+  const toSvgDataUri = (svg: string) =>
+    `data:image/svg+xml,${encodeURIComponent(svg.replace(/\n\s*/g, ' '))}`
+
+  const markerIcons = {
+    // 红色地图钉（替代 Location.png）—— ri-map-pin-fill 风格
+    location: toSvgDataUri(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#ef4444" stroke="#991b1b" stroke-width="0.8" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1112.728 0zM12 13a2 2 0 100-4 2 2 0 000 4z"/></svg>`
+    ),
+    // 绿色起点标记（替代 FirstPoint.png）—— ri-play-circle-fill 风格
+    startPoint: toSvgDataUri(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22c55e" stroke="#166534" stroke-width="0.5"/><polygon points="10,7.5 10,16.5 17,12" fill="white"/></svg>`
+    ),
+    // 红色终点标记（替代 EndPoint.png）—— ri-stop-circle-fill 风格
+    endPoint: toSvgDataUri(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ef4444" stroke="#991b1b" stroke-width="0.5"/><rect x="7.5" y="7.5" width="9" height="9" rx="2" fill="white"/></svg>`
+    ),
+    // 人物行走图标（替代 Car.png）—— ri:walk-line
+    walk: toSvgDataUri(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#3b82f6" stroke="#1e40af" stroke-width="0.4" d="m7.617 8.712l3.205-2.328A2 2 0 0 1 12.065 6a2.62 2.62 0 0 1 2.427 1.82q.279.875.51 1.181A5 5 0 0 0 19 11v2a6.99 6.99 0 0 1-5.401-2.547l-.698 3.956l2.061 1.729l2.223 6.108l-1.88.684l-2.039-5.604l-3.39-2.845a2 2 0 0 1-.714-1.904l.509-2.885l-.677.492l-2.127 2.928l-1.618-1.176L7.6 8.7zM13.5 5.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4m-2.97 13.181l-3.214 3.83l-1.532-1.285l2.975-3.546l.746-2.18l1.791 1.5z"/></svg>`
+    )
+  }
+
   // ==================== 地图实例与图层对象 ====================
   let map: any = null
   let markerLayer: any = null
@@ -343,7 +366,7 @@
             width: 32,
             height: 32,
             anchor: { x: 16, y: 32 },
-            src: '/src/assets/images/icon/Location.png'
+            src: markerIcons.location
           })
         },
         geometries
@@ -486,13 +509,13 @@
             width: 36,
             height: 36,
             anchor: { x: 18, y: 18 },
-            src: '/src/assets/images/icon/FirstPoint.png'
+            src: markerIcons.startPoint
           }),
           end: new window.TMap.MarkerStyle({
             width: 32,
             height: 32,
             anchor: { x: 18, y: 18 },
-            src: '/src/assets/images/icon/EndPoint.png'
+            src: markerIcons.endPoint
           })
         },
         geometries: [
@@ -501,7 +524,7 @@
         ]
       })
 
-      const carIcon = 'https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/car.png'
+      const carIcon = markerIcons.walk
       carMarkerLayer = new window.TMap.MultiMarker({
         map,
         styles: {
@@ -588,7 +611,7 @@
           width: 30,
           height: 30,
           anchor: { x: 15, y: 30 },
-          src: '/src/assets/images/icon/Location.png'
+          src: markerIcons.location
         })
       },
       geometries: [{ id: 'temp-marker', styleId: 'highlight', position: latLng }]
