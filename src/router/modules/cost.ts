@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const costRoutes: AppRouteRecord = {
   name: 'Cost',
   path: '/cost',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.cost.title',
     icon: 'ri:money-cny-box-line',
@@ -13,7 +13,7 @@ export const costRoutes: AppRouteRecord = {
     {
       path: 'index',
       name: 'CostIndex',
-      component: '/test/test_index',
+      component: '/test/pages/test-index',
       meta: {
         title: 'menus.cost.title',
         keepAlive: false

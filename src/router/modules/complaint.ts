@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const complaintRoutes: AppRouteRecord = {
   name: 'Complaint',
   path: '/complaint',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.complaint.title',
     icon: 'ri:message-line',
@@ -13,7 +13,7 @@ export const complaintRoutes: AppRouteRecord = {
     {
       path: 'index',
       name: 'ComplaintIndex',
-      component: '/test/test_index',
+      component: '/test/pages/test-index',
       meta: {
         title: 'menus.complaint.title',
         keepAlive: false

@@ -4,31 +4,31 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: '/403',
     name: 'Exception403',
-    component: () => import('@views/exception/403/index.vue'),
+    component: () => import('@views/exception/pages/403.vue'),
     meta: { title: '403', isHideTab: true }
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'Exception404',
-    component: () => import('@views/exception/404/index.vue'),
+    component: () => import('@views/exception/pages/404.vue'),
     meta: { title: '404', isHideTab: true }
   },
   {
     path: '/500',
     name: 'Exception500',
-    component: () => import('@views/exception/500/index.vue'),
+    component: () => import('@views/exception/pages/500.vue'),
     meta: { title: '500', isHideTab: true }
   },
   {
     path: '/outside',
-    component: () => import('@views/index/index.vue'),
+    component: () => import('@views/index/pages/index.vue'),
     name: 'Outside',
     meta: { title: 'menus.outside.title' },
     children: [
       {
         path: '/outside/iframe/:path',
         name: 'Iframe',
-        component: () => import('@/views/outside/Iframe.vue'),
+        component: () => import('@/views/outside/pages/iframe.vue'),
         meta: { title: 'iframe' }
       }
     ]

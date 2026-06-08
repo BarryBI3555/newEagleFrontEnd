@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const permissionConfigRoutes: AppRouteRecord = {
     name:'PermissionConfig',
     path:'/permissionConfig',
-    component:'/index/index',
+    component:'/index/pages/index',
     meta:{
         title:'menus.permissionconfig.title',
         // icon:'material-symbols-light:document-scanner-outline',
@@ -13,7 +13,7 @@ export const permissionConfigRoutes: AppRouteRecord = {
         {
             path:'index',
             name:'PermissionConfigIndex',
-            component:'/permissionConfig/index',
+            component:'/permissionConfig/pages/index',
             meta:{
                 title:'menus.permissionconfig.subtitle',
                 keepAlive: false,

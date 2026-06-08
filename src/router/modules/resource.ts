@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const resourceRoutes: AppRouteRecord = {
   name: 'Resource',
   path: '/resource',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.resource.title',
     icon: 'ri:database-line',
@@ -13,7 +13,7 @@ export const resourceRoutes: AppRouteRecord = {
     {
       path: 'index',
       name: 'ResourceIndex',
-      component: '/test/test_index',
+      component: '/test/pages/test-index',
       meta: {
         title: 'menus.resource.title',
         keepAlive: false

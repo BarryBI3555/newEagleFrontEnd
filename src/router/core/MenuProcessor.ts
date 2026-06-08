@@ -9,7 +9,7 @@
 
 import type { AppRouteRecord } from '@/types/router'
 import { useAppMode } from '@/hooks/core/useAppMode'
-import { fetchGetMenuList } from '@/api/system-manage'
+import { MenuList } from '@/api'
 import { asyncRoutes } from '../routes/asyncRoutes'
 import { RoutesAlias } from '../routesAlias'
 import { formatMenuTitle } from '@/utils'
@@ -54,9 +54,9 @@ export class MenuProcessor {
    * 处理后端控制模式的菜单
    */
   private async processBackendMenu(): Promise<AppRouteRecord[]> {
-    const res = await fetchGetMenuList()
-    
-    console.log('[MenuProcessor] fetchGetMenuList 返回:', res)
+    const res = await MenuList()
+
+    console.log('[MenuProcessor] MenuList 返回:', res)
     
     let list: any[] = []
     if (Array.isArray(res)) {

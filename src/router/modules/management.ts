@@ -3,7 +3,7 @@ import { AppRouteRecord } from '@/types/router'
 export const managementRoutes: AppRouteRecord = {
   name: 'Management',
   path: '/management',
-  component: '/index/index',
+  component: '/index/pages/index',
   meta: {
     title: 'menus.management.title',
     icon: 'ri:dashboard-line',
@@ -11,30 +11,23 @@ export const managementRoutes: AppRouteRecord = {
   },
   children: [
     {
-      path: 'flood-season',
-      name: 'FloodSeason',
-      component: '/management/flood-season',
-      meta: {
-        title: 'menus.management.floodSeason',
-        keepAlive: false
-      }
-    },
-    {
       path: 'car-cockpit',
       name: 'CarCockpit',
-      component: '/management/car-cockpit',
+      component: '/management/pages/car-cockpit',
       meta: {
         title: 'menus.management.carCockpit',
-        keepAlive: false
+        keepAlive: false,
+        roles: ['R_SUPER', 'R_ADMIN']
       }
     },
     {
       path: 'non-car-cockpit',
       name: 'NonCarCockpit',
-      component: '/management/non-car-cockpit',
+      component: '/management/pages/non-car-cockpit',
       meta: {
         title: 'menus.management.nonCarCockpit',
-        keepAlive: false
+        keepAlive: false,
+        roles: ['R_SUPER', 'R_ADMIN']
       }
     }
   ]
