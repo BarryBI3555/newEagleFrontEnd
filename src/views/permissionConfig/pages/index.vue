@@ -142,7 +142,7 @@
   import { useMenuStore } from '@/store/modules/menu'
   import { formatMenuTitle } from '@/utils/router'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-  import { fetchGetMenuList } from '@/api/system-manage'
+  import { MenuList } from '../api'
 
   defineOptions({ name: 'PermissionConfig' })
 
@@ -234,7 +234,7 @@
   // 加载菜单树
   const loadMenuTree = async () => {
     try {
-      const res = await fetchGetMenuList()
+      const res = await MenuList()
       // 处理 axios 响应的 data 属性
       const menus = res?.data ?? res ?? []
       const menuData = Array.isArray(menus) ? menus : (menus.data || [])

@@ -20,19 +20,11 @@
                   :class="card.boxStyle || ''"
                 >
                   <div
-                    v-if="card.localIcon"
+                    v-if="card.icon"
                     class="mr-4 size-11 flex-cc rounded-lg text-xl text-white"
                     :class="card.iconStyle"
                   >
-                    <!-- 使用本地图片 -->
-                    <img :src="card.localIcon" :alt="card.title" class="w-6 h-6 object-contain" />
-                  </div>
-                  <div
-                    v-else-if="card.icon"
-                    class="mr-4 size-11 flex-cc rounded-lg text-xl text-white"
-                    :class="card.iconStyle"
-                  >
-                    <!-- 使用SVG图标 -->
+                    <!-- 使用 remixicon 字体图标（替换原 PNG 图标） -->
                     <ArtSvgIcon :icon="card.icon"></ArtSvgIcon>
                   </div>
                   <div class="flex-1">
@@ -74,14 +66,9 @@
         </div>
       </div>
       <div id="heat-map-container" class="map-container">
-        <!-- 行政区划按钮 -->
-        <div class="bottom-in-map">
-          <img
-            src="../../../images/网格.png"
-            class="district-img-btn"
-            @click="toggleDistricts"
-            title="显示/隐藏行政区划"
-          />
+        <!-- 行政区划按钮（改用字体图标） -->
+        <div class="bottom-in-map" @click="toggleDistricts" title="显示/隐藏行政区划">
+          <ArtSvgIcon icon="ri:grid-line" class="district-icon-btn" />
         </div>
       </div>
       <div v-if="loading" class="loading">地图加载中...</div>
@@ -98,13 +85,13 @@
   import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
   import { MapLoader } from '../../api/mapLoader'
   import { ElRow, ElCol } from 'element-plus'
-  import { hotmap } from '../../api'
+  import { StatsCardsData, HeatMapData, HotmapProgress } from '../../api'
   // import LogService from '@/services/logServices'
   // const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 全局类型声明
   declare global {
     interface Window {
-      TMap: any
+      TMap: anyW
       heatData: any[]
       districtLabelLayer?: any
     }
@@ -126,14 +113,14 @@
   // 上一次轮询时缓存中的数据量；用于判断后端是否合并了新批次
   let lastCachedCount = -1
 
-  // 统计卡片默认数据
+  // 统计卡片默认数据（使用 remixicon 字体图标，不再依赖图片资源）
   const statsCards = ref([
     {
       id: 1,
       title: '新增立案',
       count: 0,
       description: '当日新增立案量',
-      localIcon: new URL('../../../../assets/images/icon/立案信息.png', import.meta.url).href, // 使用本地图标
+      icon: 'ri:file-add-line',
       iconStyle: 'bg-primary',
       boxStyle: 'h-22',
       textColor: 'var(--theme-color)',
@@ -144,7 +131,7 @@
       title: '已决案件',
       count: 0,
       description: '当日已决量',
-      localIcon: new URL('../../../../assets/images/icon/已决.png', import.meta.url).href, // 使用本地图标
+      icon: 'ri:checkbox-circle-line',
       iconStyle: 'bg-success',
       boxStyle: 'h-22',
       textColor: 'var(--theme-color)',
@@ -155,7 +142,7 @@
       title: '未决案件',
       count: 0,
       description: '截止统计日期未决量',
-      localIcon: new URL('../../../../assets/images/icon/未决管理.png', import.meta.url).href, // 使用本地图标
+      icon: 'ri:hourglass-line',
       iconStyle: 'bg-warning',
       boxStyle: 'h-22',
       textColor: 'var(--theme-color)',
@@ -170,7 +157,7 @@
 
       // console.log('请求统计数据URL:', `${VITE_API_PROXY_PORT_URL}api/statsCardsData`, params)  // 调试信息
 
-      const data = await hotmap.axiosRequestStatsCardsData(params)
+      const data = await StatsCardsData(params)
       // console.log('后端返回数据:', data)  // 调试信息
 
       // 更新统计卡片数据
@@ -225,7 +212,7 @@
 
       const params = selectedDate.value ? { date: selectedDate.value } : {}
 
-      const data = await hotmap.axiosRequestHeatMapData(params)
+      const data = await HeatMapData(params)
       // await LogService.hotmapLog('筛选并查看', params)
 
       window.heatData = data
@@ -250,7 +237,7 @@
    */
   const pollProgress = async (params: Record<string, string | undefined>) => {
     try {
-      const res: any = await hotmap.axiosRequestHotmapProgress(params)
+      const res: any = await HotmapProgress(params)
 
       if (res.complete) {
         progressPercent.value = 100
@@ -260,7 +247,7 @@
           progressTimer = null
         }
         // 重新获取完整数据
-        const data: any[] = (await hotmap.axiosRequestHeatMapData(params)) as any[]
+        const data: any[] = (await HeatMapData(params)) as any[]
         window.heatData = data
         if (heat) {
           heat.setData(window.heatData)
@@ -274,7 +261,7 @@
         const currentCachedCount = res.cachedCount ?? 0
         if (heat && currentCachedCount !== lastCachedCount) {
           lastCachedCount = currentCachedCount
-          const data: any[] = (await hotmap.axiosRequestHeatMapData(params)) as any[]
+          const data: any[] = (await HeatMapData(params)) as any[]
           window.heatData = data
           heat.setData(window.heatData)
         }

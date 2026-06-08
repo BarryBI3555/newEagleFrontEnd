@@ -72,7 +72,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { axiosRequestAnjunCxXny } from '../../../api'
+  import { AnjunCxXny } from '../../../api'
 
   defineOptions({ name: 'AnjunCxXnyTable' })
 
@@ -167,7 +167,7 @@
           tjDate: tableApiParams.value.tjDate,
           comnameSgs: tableApiParams.value.comnameSgs
         }
-        const response = await axiosRequestAnjunCxXny(queryParams)
+        const response = await AnjunCxXny(queryParams)
         let tableResultData: AnjunCxXnyData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -259,7 +259,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await axiosRequestAnjunCxXny(tableApiParams.value)
+      const res = await AnjunCxXny(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as AnjunCxXnyData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)

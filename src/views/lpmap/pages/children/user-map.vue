@@ -28,16 +28,16 @@
               <!-- 返回主页按钮 -->
               <div class="district-and-home-btns">
                 <!-- 行政区划相关 -->
-                <img
-                  src="../../../images/网格.png"
-                  class="home-img-btn"
+                <ArtSvgIcon
+                  icon="ri:grid-line"
+                  class="home-icon-btn"
                   @click="toggleDistricts"
                   title="显示/隐藏行政区划"
                   position="left"
                 />
-                <img
-                  src="../../../images/Home.png"
-                  class="home-img-btn"
+                <ArtSvgIcon
+                  icon="ri:home-line"
+                  class="home-icon-btn"
                   @click="goToHomePage"
                   title="返回主页"
                   position="right"
@@ -215,10 +215,10 @@
 
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
-  import { AdministrativeRegionManager } from '../../api//AdministrativeRegionmanager'
+  import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
   import { MapLoader } from '../../api/mapLoader'
-  import { personalmap } from '../../api'
-  // import { LogService } from '../../../api/logServices'
+  import { GroupList, LatestLocations, LocationProgress, UserTrajectory } from '../../api'
+  // import { LogService } from '../../../../api/logServices'
   // const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   const mapLoader = MapLoader.getInstance()
   // 全局声明腾讯地图SDK和自定义属性，避免TS类型报错
@@ -398,8 +398,8 @@
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
 
-      const allGroups = await personalmap.axiosRequestGroupList(params)
-      const userData = await personalmap.axiosRequestLatestLocations(params)
+      const allGroups = await GroupList(params)
+      const userData = await LatestLocations(params)
 
       const groupsWithData = new Set(userData.map((user: any) => user.groupscode))
       let filteredGroups = (allGroups || []).filter((group: any) =>
@@ -448,7 +448,7 @@
 
       // await LogService.userMapLog('筛选人员', params)
 
-      const data = await personalmap.axiosRequestLatestLocations(params)
+      const data = await LatestLocations(params)
       clearOverlays()
 
       userList.value = data || []
@@ -539,7 +539,7 @@
 
     locationProgressTimer = setInterval(async () => {
       try {
-        const res = await personalmap.axiosRequestLocationProgress(params)
+        const res = await LocationProgress(params)
 
         if (res.complete) {
           locationProgressPercent.value = 100
@@ -621,7 +621,7 @@
 
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
-      const data = await personalmap.axiosRequestUserTrajectory(usercode, params)
+      const data = await UserTrajectory(usercode, params)
 
       if (!data || data.length === 0) {
         error.value = '该用户当日无轨迹数据'

@@ -73,7 +73,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { axiosRequestZhpflKhq } from '../../../api'
+  import { ZhpflKhq } from '../../../api'
 
   defineOptions({ name: 'ZhpflKhqTable' })
 
@@ -139,7 +139,7 @@
           tjDate: tableApiParams.value.tjDate || '',
           comnameSgs: tableApiParams.value.comnameSgs ?? ''
         }
-        const response = await axiosRequestZhpflKhq(queryParams)
+        const response = await ZhpflKhq(queryParams)
         let tableResultData: ZhpflKhqData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -180,7 +180,7 @@
   // ==================== 7. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await axiosRequestZhpflKhq({ current: 1, size: 9999 })
+      const res = await ZhpflKhq({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptOptions(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -227,7 +227,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await axiosRequestZhpflKhq(tableApiParams.value)
+      const res = await ZhpflKhq(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as ZhpflKhqData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)

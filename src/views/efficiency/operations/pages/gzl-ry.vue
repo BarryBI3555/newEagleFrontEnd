@@ -147,7 +147,7 @@
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
   import { LogService } from '@/services/logServices'
-  import { axiosRequestDailyWorkloadRy } from '../../../api'
+  import { DailyWorkloadRy } from '../../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称（用于 devtools 调试）
   defineOptions({ name: 'GzlRyTable' })
@@ -412,7 +412,7 @@
           userName: tableApiParams.value.userName ?? ''
         }
 
-        const response = await axiosRequestDailyWorkloadRy(queryParams)
+        const response = await DailyWorkloadRy(queryParams)
 
         // axios 返回的已经是 res.data.data（后端返回的数据部分）
         let tableResultData: DailyWorkloadData[] = []
@@ -508,7 +508,7 @@
       // 记录刷新日志
       // await LogService.tableLog('人员当日工作量', '刷新', tableApiParams.value)
 
-      const res = await axiosRequestDailyWorkloadRy(tableApiParams.value)      // axios 返回的已经是数据数组
+      const res = await DailyWorkloadRy(tableApiParams.value)      // axios 返回的已经是数据数组
       if (Array.isArray(res) && res.length) {
         allOriginData.value = [...res]
         buildDeptGroupMap(allOriginData.value)
@@ -600,7 +600,7 @@
     try {
       // await LogService.tableLog('人员当日工作量', '导出全部', tableApiParams.value)
 
-      const res = await axiosRequestDailyWorkloadRy(tableApiParams.value)
+      const res = await DailyWorkloadRy(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as DailyWorkloadData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })

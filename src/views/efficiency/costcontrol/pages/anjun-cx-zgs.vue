@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { axiosRequestAnjunCxZgs } from '../../../api'
+  import { AnjunCxZgs } from '../../../api'
 
   defineOptions({ name: 'AnjunCxZgsTable' })
 
@@ -173,7 +173,7 @@
           tjDate: tableApiParams.value.tjDate || '',
           comnameSgs: tableApiParams.value.comnameSgs ?? ''
         }
-        const response = await axiosRequestAnjunCxZgs(queryParams)
+        const response = await AnjunCxZgs(queryParams)
         let tableResultData: AnjunCxZgsData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -224,7 +224,7 @@
   // ==================== 7. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await axiosRequestAnjunCxZgs({ current: 1, size: 9999 })
+      const res = await AnjunCxZgs({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptOptions(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -275,7 +275,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await axiosRequestAnjunCxZgs(tableApiParams.value)
+      const res = await AnjunCxZgs(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as AnjunCxZgsData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)

@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { axiosRequestZhouqiQs } from '../../../api'
+  import { ZhouqiQs } from '../../../api'
 
   defineOptions({ name: 'ZhouqiQsTable' })
 
@@ -136,7 +136,7 @@
           tjDate: tableApiParams.value.tjDate || '',
           comnameSgs: tableApiParams.value.comnameSgs ?? ''
         }
-        const response = await axiosRequestZhouqiQs(queryParams)
+        const response = await ZhouqiQs(queryParams)
         let tableResultData: ZhouqiQsData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -173,7 +173,7 @@
   // ==================== 7. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await axiosRequestZhouqiQs({ current: 1, size: 9999 })
+      const res = await ZhouqiQs({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptOptions(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -218,7 +218,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await axiosRequestZhouqiQs(tableApiParams.value)
+      const res = await ZhouqiQs(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as ZhouqiQsData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)
