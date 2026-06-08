@@ -10,7 +10,6 @@ import {listRoutes} from './list'
 import { indicatorRoutes } from './indicator'
 import { dataTableRoutes } from './datatable'
 import { testRoutes } from './test'
-import { operationLogRoutes } from './operationlog'
 import { permissionConfigRoutes } from './permissionconfig'
 
 // import { testRoutes } from './test'
@@ -18,7 +17,7 @@ import { permissionConfigRoutes } from './permissionconfig'
  * 导出所有模块化路由
  */
 export const routeModules: AppRouteRecord[] = [
-    
+
     dashboardRoutes,
     managementRoutes,
     efficiencyRoutes,
@@ -26,7 +25,6 @@ export const routeModules: AppRouteRecord[] = [
     complaintRoutes,
     resourceRoutes,
     profileRoutes,
-    // operationLogRoutes,
     // permissionConfigRoutes,
     //listRoutes,
     // testRoutes

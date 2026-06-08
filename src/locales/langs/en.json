@@ -251,8 +251,7 @@
     "management": {
       "title": "Management Cockpit",
       "carCockpit": "Auto Insurance Cockpit",
-      "nonCarCockpit": "Non-Auto Insurance Cockpit",
-      "floodSeason": "Flood Season Cockpit"
+      "nonCarCockpit": "Non-Auto Insurance Cockpit"
     },
     "result": {
       "title": "Result Page",

@@ -13,7 +13,7 @@ export const dashboardRoutes: AppRouteRecord = {
     {
       path: 'personalmap',
       name: 'PersonalMap',
-      component: '/dashboard/pages/user-map',
+      component: '/lpmap/pages/children/user-map',
       meta: {
         title: 'menus.dashboard.personalmap',
         keepAlive: false,
@@ -25,7 +25,7 @@ export const dashboardRoutes: AppRouteRecord = {
     {
       path: 'hotmap',
       name: 'HotMap',
-      component: '/dashboard/pages/3d-static-hot-map',
+      component: '/lpmap/pages/children/3d_static_hot_map',
       meta: {
         title: 'menus.dashboard.hotmap',
         keepAlive: false,
