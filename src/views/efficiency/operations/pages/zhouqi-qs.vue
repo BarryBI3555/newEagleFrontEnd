@@ -232,7 +232,8 @@
 </script>
 
 <style scoped>
-  .el-form-item { height: 0px; line-height: 0px; }
+  /* 搜索栏表单项：文字标签与选择框在所属列中垂直居中 */
+  :deep(.art-search-bar .el-form-item) { align-items: center; margin-bottom: 0; }
   .custom-header:hover { color: var(--el-color-primary-light-3); padding: 12px 12px 12px; }
   .demo-group .config-toggles .el-switch { --el-switch-on-color: var(--el-color-primary); }
   .demo-group .performance-info .el-alert { --el-alert-padding: 12px; }

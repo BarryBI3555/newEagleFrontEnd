@@ -183,25 +183,47 @@
   }
 
   // ==================== SVG 地图标记图标（替代 PNG 图片） ====================
-  const toSvgDataUri = (svg: string) =>
-    `data:image/svg+xml,${encodeURIComponent(svg.replace(/\n\s*/g, ' '))}`
+  // 全部使用官方 remixicon 源 SVG，fill="currentColor" 由外部 color 控制
+  // 数据源：@iconify-json/ri（icones.js.org/collection/ri）
 
+  // 从 .user-map-container 容器读取 CSS 变量值（TMap LabelStyle 不支持 var()）
+  const cssVar = (name: string, fallback: string): string => {
+    const el = document.querySelector('.user-map-container') as HTMLElement | null
+    if (!el) return fallback
+    const v = getComputedStyle(el).getPropertyValue(name).trim()
+    return v || fallback
+  }
+
+  const toSvgDataUri = (svg: string, color: string) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(
+      svg
+        .replace(/\n\s*/g, ' ')
+        // 在 <svg> 标签内注入 color 样式（currentColor 会自动继承此值）
+        .replace(/<svg /, `<svg style="color:${color}" `)
+    )}`
+
+  // 官方 remixicon 源 SVG（来自 @iconify-json/ri/icons.json）
+  // - location:   ri:map-pin-2-fill   —— 地图钉
+  // - startPoint: ri:play-circle-fill —— 起点（播放）
+  // - endPoint:   ri:stop-circle-fill —— 终点（停止）
+  // - walk:       ri:walk-line        —— 行人
+  // 颜色统一通过 CSS 控制（见 .user-map-container CSS 变量）
   const markerIcons = {
-    // 红色地图钉（替代 Location.png）—— ri-map-pin-fill 风格
     location: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#ef4444" stroke="#991b1b" stroke-width="0.8" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1112.728 0zM12 13a2 2 0 100-4 2 2 0 000 4z"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-location-stroke, #b91c1c)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1 1 12.728 0M12 13a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/><circle cx="12" cy="11" r="2" fill="#ffffff"/></svg>`,
+      'var(--marker-location, #ef4444)'
     ),
-    // 绿色起点标记（替代 FirstPoint.png）—— ri-play-circle-fill 风格
     startPoint: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22c55e" stroke="#166534" stroke-width="0.5"/><polygon points="10,7.5 10,16.5 17,12" fill="white"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-start-stroke, #15803d)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10M10.622 8.415a.4.4 0 0 0-.622.332v6.506a.4.4 0 0 0 .622.332l4.879-3.252a.4.4 0 0 0 0-.666z"/><path fill="#ffffff" d="M10.622 8.415a.4.4 0 0 0-.622.332v6.506a.4.4 0 0 0 .622.332l4.879-3.252a.4.4 0 0 0 0-.666z"/></svg>`,
+      'var(--marker-start, #22c55e)'
     ),
-    // 红色终点标记（替代 EndPoint.png）—— ri-stop-circle-fill 风格
     endPoint: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ef4444" stroke="#991b1b" stroke-width="0.5"/><rect x="7.5" y="7.5" width="9" height="9" rx="2" fill="white"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-end-stroke, #b91c1c)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10M9 9v6h6V9z"/><rect x="9" y="9" width="6" height="6" fill="#ffffff"/></svg>`,
+      'var(--marker-end, #ef4444)'
     ),
-    // 人物行走图标（替代 Car.png）—— ri:walk-line
     walk: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#3b82f6" stroke="#1e40af" stroke-width="0.4" d="m7.617 8.712l3.205-2.328A2 2 0 0 1 12.065 6a2.62 2.62 0 0 1 2.427 1.82q.279.875.51 1.181A5 5 0 0 0 19 11v2a6.99 6.99 0 0 1-5.401-2.547l-.698 3.956l2.061 1.729l2.223 6.108l-1.88.684l-2.039-5.604l-3.39-2.845a2 2 0 0 1-.714-1.904l.509-2.885l-.677.492l-2.127 2.928l-1.618-1.176L7.6 8.7zM13.5 5.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4m-2.97 13.181l-3.214 3.83l-1.532-1.285l2.975-3.546l.746-2.18l1.791 1.5z"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-walk-stroke, #1d4ed8)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="m7.617 8.712l3.205-2.328A2 2 0 0 1 12.065 6a2.62 2.62 0 0 1 2.427 1.82q.279.875.51 1.181A5 5 0 0 0 19 11v2a6.99 6.99 0 0 1-5.401-2.547l-.698 3.956l2.061 1.729l2.223 6.108l-1.88.684l-2.039-5.604l-3.39-2.845a2 2 0 0 1-.714-1.904l.509-2.885l-.677.492l-2.127 2.928l-1.618-1.176L7.6 8.7zM13.5 5.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4m-2.97 13.181l-3.214 3.83l-1.532-1.285l2.975-3.546l.746-2.18l1.791 1.5z"/></svg>`,
+      'var(--marker-walk, #3b82f6)'
     )
   }
 
@@ -389,12 +411,15 @@
         map,
         styles: {
           userLabel: new window.TMap.LabelStyle({
-            color: '#ff3333',
+            color: cssVar('--marker-label-color', '#fde047'),
             size: 12,
             offset: { x: 0, y: 0 },
             angle: 0,
             alignment: 'center',
-            verticalAlignment: 'top'
+            verticalAlignment: 'top',
+            weight: 'bold',
+            strokeColor: cssVar('--marker-label-stroke', '#1f2937'),
+            strokeWidth: 2
           })
         },
         geometries: labelGeometries
@@ -679,6 +704,29 @@
 </script>
 
 <style scoped>
+  /* ========== SVG 标记图标颜色（CSS 控制，替代 SVG 内硬编码 fill） ==========
+     数据 URI 中 <svg style="color: var(--marker-*)">，
+     内部 path 的 fill="currentColor" 自动继承此颜色。
+     修改下方变量值即可全局换色，主题切换时只需覆盖 :root 或上层选择器。 */
+  .user-map-container {
+    /* 起点（绿色，ri:play-circle-fill） */
+    --marker-start: #22c55e;
+    /* 终点（红色，ri:stop-circle-fill） */
+    --marker-end: #ef4444;
+    /* 位置/地图钉（红色，ri:map-pin-2-fill） */
+    --marker-location: #ef4444;
+    /* 行人/轨迹动画（蓝色，ri:walk-line） */
+    --marker-walk: #3b82f6;
+    /* 边框色（深一档，用于 SVG stroke） */
+    --marker-start-stroke: #15803d;
+    --marker-end-stroke: #b91c1c;
+    --marker-location-stroke: #b91c1c;
+    --marker-walk-stroke: #1d4ed8;
+    /* 姓名标签边框（控制 TMap.LabelStyle 文字描边） */
+    --marker-label-color: #fde047;
+    --marker-label-stroke: #1f2937;
+  }
+
   /* ========== 深色主题样式 ========== */
   :deep(.el-input__inner),
   :deep(.el-select__input) {

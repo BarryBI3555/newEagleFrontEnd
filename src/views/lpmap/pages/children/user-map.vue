@@ -1,5 +1,5 @@
 <template>
-  <div class="user-map-container">
+  <div class="user-map-container" :class="{ 'theme-dark': isDark }">
     <!-- 左侧地图区域 -->
     <div class="map-content">
       <div id="map-container" class="map-container"></div>
@@ -207,33 +207,59 @@
 
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
+  import { useSettingStore } from '@/store/modules/setting'
+  import { storeToRefs } from 'pinia'
   import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
-  import { MapLoader } from '../../api/mapLoader'
   import { GroupList, LatestLocations, LocationProgress, UserTrajectory } from '../../api'
+  import { MapLoader } from '../../api/mapLoader'
+  const settingStore = useSettingStore()
+  const { isDark } = storeToRefs(settingStore)
   // import { LogService } from '../../../../api/logServices'
   // const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   const mapLoader = MapLoader.getInstance()
 
   // ==================== SVG 地图标记图标（替代 PNG 图片） ====================
-  const toSvgDataUri = (svg: string) =>
-    `data:image/svg+xml,${encodeURIComponent(svg.replace(/\n\s*/g, ' '))}`
+  // 全部使用官方 remixicon 源 SVG，fill="currentColor" 由外部 color 控制
+  // 数据源：@iconify-json/ri（icones.js.org/collection/ri）
 
+  // 从 .user-map-container 容器读取 CSS 变量值（TMap LabelStyle 不支持 var()）
+  const cssVar = (name: string, fallback: string): string => {
+    const el = document.querySelector('.user-map-container') as HTMLElement | null
+    if (!el) return fallback
+    const v = getComputedStyle(el).getPropertyValue(name).trim()
+    return v || fallback
+  }
+
+  const toSvgDataUri = (svg: string, color: string) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(
+      svg
+        .replace(/\n\s*/g, ' ')
+        // 在 <svg> 标签内注入 color 样式（currentColor 会自动继承此值）
+        .replace(/<svg /, `<svg style="color:${color}" `)
+    )}`
+
+  // 官方 remixicon 源 SVG（来自 @iconify-json/ri/icons.json）
+  // - location:  ri:map-pin-2-fill  —— 地图钉
+  // - startPoint: ri:play-circle-fill —— 起点（播放）
+  // - endPoint:  ri:stop-circle-fill —— 终点（停止）
+  // - walk:      ri:walk-line  —— 行人
+  // 颜色统一通过 CSS 控制（见 .marker-icon-* 样式）
   const markerIcons = {
-    // 红色地图钉（替代 Location.png）—— ri-map-pin-fill 风格
     location: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#ef4444" stroke="#991b1b" stroke-width="0.8" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1112.728 0zM12 13a2 2 0 100-4 2 2 0 000 4z"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-location-stroke, #b91c1c)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1 1 12.728 0M12 13a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/><circle cx="12" cy="11" r="2" fill="#ffffff"/></svg>`,
+      'var(--marker-location, #ef4444)'
     ),
-    // 绿色起点标记（替代 FirstPoint.png）—— ri-play-circle-fill 风格
     startPoint: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22c55e" stroke="#166534" stroke-width="0.5"/><polygon points="10,7.5 10,16.5 17,12" fill="white"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-start-stroke, #15803d)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10M10.622 8.415a.4.4 0 0 0-.622.332v6.506a.4.4 0 0 0 .622.332l4.879-3.252a.4.4 0 0 0 0-.666z"/><path fill="#ffffff" d="M10.622 8.415a.4.4 0 0 0-.622.332v6.506a.4.4 0 0 0 .622.332l4.879-3.252a.4.4 0 0 0 0-.666z"/></svg>`,
+      'var(--marker-start, #22c55e)'
     ),
-    // 红色终点标记（替代 EndPoint.png）—— ri-stop-circle-fill 风格
     endPoint: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ef4444" stroke="#991b1b" stroke-width="0.5"/><rect x="7.5" y="7.5" width="9" height="9" rx="2" fill="white"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-end-stroke, #b91c1c)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10M9 9v6h6V9z"/><rect x="9" y="9" width="6" height="6" fill="#ffffff"/></svg>`,
+      'var(--marker-end, #ef4444)'
     ),
-    // 人物行走图标（替代 Car.png）—— ri:walk-line
     walk: toSvgDataUri(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#3b82f6" stroke="#1e40af" stroke-width="0.4" d="m7.617 8.712l3.205-2.328A2 2 0 0 1 12.065 6a2.62 2.62 0 0 1 2.427 1.82q.279.875.51 1.181A5 5 0 0 0 19 11v2a6.99 6.99 0 0 1-5.401-2.547l-.698 3.956l2.061 1.729l2.223 6.108l-1.88.684l-2.039-5.604l-3.39-2.845a2 2 0 0 1-.714-1.904l.509-2.885l-.677.492l-2.127 2.928l-1.618-1.176L7.6 8.7zM13.5 5.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4m-2.97 13.181l-3.214 3.83l-1.532-1.285l2.975-3.546l.746-2.18l1.791 1.5z"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" stroke="var(--marker-walk-stroke, #1d4ed8)" stroke-width="1.2" stroke-linejoin="round" paint-order="stroke fill" d="m7.617 8.712l3.205-2.328A2 2 0 0 1 12.065 6a2.62 2.62 0 0 1 2.427 1.82q.279.875.51 1.181A5 5 0 0 0 19 11v2a6.99 6.99 0 0 1-5.401-2.547l-.698 3.956l2.061 1.729l2.223 6.108l-1.88.684l-2.039-5.604l-3.39-2.845a2 2 0 0 1-.714-1.904l.509-2.885l-.677.492l-2.127 2.928l-1.618-1.176L7.6 8.7zM13.5 5.5a2 2 0 1 1 0-4a2 2 0 0 1 0 4m-2.97 13.181l-3.214 3.83l-1.532-1.285l2.975-3.546l.746-2.18l1.791 1.5z"/></svg>`,
+      'var(--marker-walk, #3b82f6)'
     )
   }
 
@@ -512,16 +538,16 @@
         map,
         styles: {
           userLabel: new window.TMap.LabelStyle({
-            color: '#990000',
+            color: cssVar('--marker-label-color', '#fde047'),
             size: 15,
             offset: { x: 0, y: 2 },
             angle: 0,
             alignment: 'center',
             verticalAlignment: 'top',
-            fontFamily: 'Microsoft YaHei'
-            // weight: 'bold'
-            // strokeColor: '#000000',
-            // strokeWidth: 2
+            fontFamily: 'Microsoft YaHei',
+            weight: 'bold',
+            strokeColor: cssVar('--marker-label-stroke', '#1f2937'),
+            strokeWidth: 2
           })
         },
         geometries: labelGeometries
@@ -703,7 +729,7 @@
           car: new window.TMap.MarkerStyle({
             width: 36,
             height: 36,
-            anchor: { x: 18, y: 18 },
+            anchor: { x: 18, y: 28 },
             faceTo: 'map',
             rotate: 0,
             src: markerIcons.walk
@@ -820,11 +846,12 @@
     })
 
     const closeBtnId = `custom-info-close-${Date.now()}`
+    const isDarkMode = isDark.value
     const content = `
-  <div style="background:#1f2937;color:#e5e7eb;border-radius:12px;padding:12px 16px;min-width:240px;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:13px;line-height:1.5;border:1px solid #374151;">
+  <div style="background:${isDarkMode ? '#1f2937' : '#ffffff'};color:${isDarkMode ? '#e5e7eb' : '#1f2937'};border-radius:12px;padding:12px 16px;min-width:240px;box-shadow:${isDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)'};font-size:13px;line-height:1.5;border:1px solid ${isDarkMode ? '#374151' : '#e5e7eb'};">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <span style="font-weight:bold;font-size:14px;">📍 轨迹点详情</span>
-      <span id="${closeBtnId}" style="cursor:pointer;font-size:18px;color:#9ca3af;">&times;</span>
+      <span id="${closeBtnId}" style="cursor:pointer;font-size:18px;color:${isDarkMode ? '#9ca3af' : '#6b7280'};">&times;</span>
     </div>
     <div>🕒 时间：${formatTime(point.createTime)}</div>
     <div style="margin:6px 0;">🏠 地址：${point.address || '解析中...'}</div>
@@ -890,42 +917,163 @@
 </script>
 
 <style scoped>
-  /* ========== 深色主题样式 ========== */
+  /* ========== SVG 标记图标颜色（CSS 控制，替代 SVG 内硬编码 fill） ==========
+     数据 URI 中 <svg style="color: var(--marker-*)">，
+     内部 path 的 fill="currentColor" 自动继承此颜色。
+     修改下方变量值即可全局换色，主题切换时只需覆盖 :root 或上层选择器。 */
+  .user-map-container {
+    /* ==================== 主题色变量（CSS 控制，自动响应主题切换） ====================
+       默认值为浅色主题。
+       切换到深色主题时由下方 `.user-map-container.theme-dark` 块覆盖。
+       主题判断依据：Pinia settingStore.isDark（storeToRefs 响应式绑定到根元素 class）。 */
+
+    /* 起点（绿色，ri:play-circle-fill） */
+    --marker-start: #22c55e;
+    /* 终点（红色，ri:stop-circle-fill） */
+    --marker-end: #ef4444;
+    /* 位置/地图钉（红色，ri:map-pin-2-fill） */
+    --marker-location: #ef4444;
+    /* 行人/轨迹动画（蓝色，ri:walk-line） */
+    --marker-walk: #3b82f6;
+    /* 边框色（深一档，用于 SVG stroke） */
+    --marker-start-stroke: #15803d;
+    --marker-end-stroke: #b91c1c;
+    --marker-location-stroke: #b91c1c;
+    --marker-walk-stroke: #1d4ed8;
+    /* 姓名标签边框（控制 TMap.LabelStyle 文字描边） */
+    --marker-label-color: #fde047;
+    --marker-label-stroke: #1f2937;
+
+    /* ==================== 右侧人员列表（user-list）主题色（浅色默认） ==================== */
+    /* 容器 */
+    --ul-bg: #ffffff;
+    --ul-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+    /* 卡片 / 详情头 */
+    --ul-card-bg: #f9fafb;
+    --ul-card-bg-active: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    --ul-card-header-bg: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    --ul-card-border: #e5e7eb;
+    --ul-card-divider: #e5e7eb;
+    --ul-card-info-divider: #e5e7eb;
+    --ul-card-hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+
+    /* 文字 */
+    --ul-text-primary: #111827;
+    --ul-text-code: #0f172a;
+    --ul-text-body: #374151;
+    --ul-text-secondary: #6b7280;
+    --ul-text-tertiary: #6b7280;
+
+    /* 按钮 / 图标 */
+    --ul-float-btn-bg: #9ca3af;
+    --ul-float-btn-hover: #3b82f6;
+    --ul-home-icon-bg: rgba(59, 130, 246, 0.08);
+    --ul-home-icon-border: rgba(59, 130, 246, 0.3);
+    --ul-home-icon-color: #3b82f6;
+    --ul-home-icon-hover-bg: rgba(59, 130, 246, 0.15);
+    --ul-home-icon-hover-border: #2563eb;
+    --ul-home-icon-hover-color: #1d4ed8;
+
+    /* Element Plus 组件（恢复 Element Plus 默认浅色） */
+    --ul-input-color: inherit;
+    --ul-input-bg: #ffffff;
+    --ul-input-border: #d1d5db;
+    --ul-input-placeholder: #9ca3af;
+    --ul-input-wrapper-border: #d1d5db;
+    --ul-button-default-bg: #ffffff;
+    --ul-button-default-border: #d1d5db;
+    --ul-button-default-color: #374151;
+    --ul-button-default-hover-bg: #f3f4f6;
+    --ul-button-default-hover-border: #9ca3af;
+    --ul-button-default-hover-color: #111827;
+  }
+
+  /* ==================== 深色主题变量（通过 Pinia isDark 响应式绑定 class） ====================
+     specificity: .user-map-container.theme-dark[data-v-xxx] = 0,2,1 — 覆盖默认浅色值 (0,1,1) */
+  .user-map-container.theme-dark {
+    /* 容器 */
+    --ul-bg: #1f2937;
+    --ul-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+    /* 卡片 / 详情头 */
+    --ul-card-bg: #2d3a4a;
+    --ul-card-bg-active: linear-gradient(135deg, #1e2a3a 0%, #1f2c3c 100%);
+    --ul-card-header-bg: linear-gradient(135deg, #1e2a3a 0%, #1f2c3c 100%);
+    --ul-card-border: #374151;
+    --ul-card-divider: #374151;
+    --ul-card-info-divider: #374151;
+    --ul-card-hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+
+    /* 文字 */
+    --ul-text-primary: #f3f4f6;
+    --ul-text-code: #f9fafb;
+    --ul-text-body: #e5e7eb;
+    --ul-text-secondary: #9ca3af;
+    --ul-text-tertiary: #9ca3af;
+
+    /* 按钮 / 图标 */
+    --ul-float-btn-bg: #89929f;
+    --ul-float-btn-hover: #253f78;
+    --ul-home-icon-bg: rgba(59, 130, 246, 0.15);
+    --ul-home-icon-border: rgba(59, 130, 246, 0.4);
+    --ul-home-icon-color: #60a5fa;
+    --ul-home-icon-hover-bg: rgba(59, 130, 246, 0.3);
+    --ul-home-icon-hover-border: #3b82f6;
+    --ul-home-icon-hover-color: #93c5fd;
+
+    /* Element Plus 组件（统一深色化） */
+    --ul-input-color: #e5e7eb;
+    --ul-input-bg: #1f2937;
+    --ul-input-border: #374151;
+    --ul-input-placeholder: #9ca3af;
+    --ul-input-wrapper-border: #9ca3af;
+    --ul-button-default-bg: #374151;
+    --ul-button-default-border: #4b5563;
+    --ul-button-default-color: #e5e7eb;
+    --ul-button-default-hover-bg: #4b5563;
+    --ul-button-default-hover-border: #6b7280;
+    --ul-button-default-hover-color: #f3f4f6;
+  }
+
+  /* ========== Element Plus 组件（响应主题） ==========
+     颜色全部走 CSS 变量；浅色主题由 .user-map-container 默认值决定，
+     深色主题由 .user-map-container.theme-dark 覆盖（isDark store 驱动）。 */
   :deep(.el-input__inner),
   :deep(.el-select__input) {
-    color: #e5e7eb !important;
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
+    color: var(--ul-input-color) !important;
+    background-color: var(--ul-input-bg) !important;
+    border-color: var(--ul-input-border) !important;
   }
   :deep(.el-input__inner::placeholder),
   :deep(.el-select__input::placeholder) {
-    color: #9ca3af !important;
+    color: var(--ul-input-placeholder) !important;
   }
   :deep(.el-input__wrapper),
   :deep(.el-select__wrapper) {
-    background-color: #1f2937 !important;
+    background-color: var(--ul-input-bg) !important;
     box-shadow: none !important;
-    border: 1px solid #9ca3af !important;
+    border: 1px solid var(--ul-input-wrapper-border) !important;
     border-radius: 4px;
   }
   :deep(.el-input__prefix),
   :deep(.el-input__suffix),
   :deep(.el-select__suffix) {
-    color: #9ca3af !important;
+    color: var(--ul-input-placeholder) !important;
   }
   :deep(.el-button--primary) {
     background-color: #3b82f6;
     border-color: #3b82f6;
   }
   :deep(.el-button--default) {
-    background-color: #374151;
-    border-color: #4b5563;
-    color: #e5e7eb;
+    background-color: var(--ul-button-default-bg);
+    border-color: var(--ul-button-default-border);
+    color: var(--ul-button-default-color);
   }
   :deep(.el-button--default:hover) {
-    background-color: #4b5563;
-    border-color: #6b7280;
-    color: #f3f4f6;
+    background-color: var(--ul-button-default-hover-bg);
+    border-color: var(--ul-button-default-hover-border);
+    color: var(--ul-button-default-hover-color);
   }
 
   /* 顶部一行布局 */
@@ -939,7 +1087,7 @@
   .user-list-title {
     font-size: 18px;
     font-weight: 600;
-    color: #f3f4f6;
+    color: var(--ul-text-primary);
     margin: 0;
     white-space: nowrap;
   }
@@ -962,16 +1110,16 @@
     cursor: pointer;
     transition: all 0.25s ease;
     flex-shrink: 0;
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.4);
+    background: var(--ul-home-icon-bg);
+    border: 1px solid var(--ul-home-icon-border);
     border-radius: 6px;
-    color: #60a5fa;
+    color: var(--ul-home-icon-color);
     font-size: 18px;
   }
   .home-icon-btn:hover {
-    background: rgba(59, 130, 246, 0.3);
-    border-color: #3b82f6;
-    color: #93c5fd;
+    background: var(--ul-home-icon-hover-bg);
+    border-color: var(--ul-home-icon-hover-border);
+    color: var(--ul-home-icon-hover-color);
     transform: scale(1.08);
   }
 
@@ -995,7 +1143,8 @@
     display: flex;
     width: 100%;
     height: 100%;
-    background: #111827;
+    padding: 10px;
+    /* background: #111827; */
   }
 
   .map-content {
@@ -1018,9 +1167,9 @@
   .user-list {
     width: 340px;
     height: 100%;
-    background: #1f2937;
+    background: var(--ul-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--ul-shadow);
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -1045,7 +1194,7 @@
     transform: translateY(-50%);
     width: 20px;
     height: 30px;
-    background: #89929f;
+    background: var(--ul-float-btn-bg);
     color: #fff;
     display: flex;
     align-items: center;
@@ -1058,7 +1207,7 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   }
   .float-toggle-btn:hover {
-    background: #253f78;
+    background: var(--ul-float-btn-hover);
     width: 30px;
   }
   .list-mode {
@@ -1069,7 +1218,7 @@
   .user-list-fixed {
     flex-shrink: 0;
     padding-bottom: 16px;
-    border-bottom: 1px solid #374151;
+    border-bottom: 1px solid var(--ul-card-divider);
     margin-bottom: 8px;
   }
   .user-list-scroll {
@@ -1079,22 +1228,22 @@
     box-sizing: border-box;
   }
   .user-card {
-    background: #2d3a4a;
+    background: var(--ul-card-bg);
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
     cursor: pointer;
     transition: all 0.28s ease;
-    border: 1px solid #374151;
+    border: 1px solid var(--ul-card-border);
   }
   .user-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--ul-card-hover-shadow);
     border-color: #3b82f6;
   }
   .user-card.active {
     border-color: #3b82f6;
-    background: linear-gradient(135deg, #1e2a3a 0%, #1f2c3c 100%);
+    background: var(--ul-card-bg-active);
   }
   .user-card-header {
     display: flex;
@@ -1105,17 +1254,17 @@
   .user-code {
     font-weight: 600;
     font-size: 15px;
-    color: #f9fafb;
+    color: var(--ul-text-code);
   }
   .user-code-sub {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     margin-left: 4px;
     font-weight: normal;
   }
   .user-time {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     white-space: nowrap;
   }
   .user-card-body {
@@ -1129,26 +1278,26 @@
     margin-bottom: 6px;
   }
   .user-location .label {
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     font-size: 13px;
     white-space: nowrap;
   }
   .user-location .value {
-    color: #e5e7eb;
+    color: var(--ul-text-body);
     font-size: 13px;
     text-align: right;
     word-break: break-all;
   }
   .user-info {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     padding: 6px 0;
-    border-top: 1px dashed #374151;
+    border-top: 1px dashed var(--ul-card-info-divider);
     margin: 6px 0;
   }
   .user-group {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
   }
   .detail-mode {
     width: 100%;
@@ -1159,7 +1308,7 @@
   .detail-header {
     flex-shrink: 0;
     padding: 20px;
-    background: linear-gradient(135deg, #1e2a3a 0%, #1f2c3c 100%);
+    background: var(--ul-card-header-bg);
     border-radius: 12px;
     margin-bottom: 16px;
   }
@@ -1172,7 +1321,7 @@
   .detail-title {
     font-size: 20px;
     font-weight: 700;
-    color: #f3f4f6;
+    color: var(--ul-text-primary);
     margin: 0;
   }
   .detail-info-row {
@@ -1188,11 +1337,11 @@
   .detail-info-row label {
     width: 90px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     font-size: 13px;
   }
   .detail-info-row span {
-    color: #e5e7eb;
+    color: var(--ul-text-body);
   }
   .detail-path-list {
     flex: 1;
@@ -1203,35 +1352,35 @@
   .path-title {
     font-size: 14px;
     font-weight: 600;
-    color: #d1d5db;
+    color: var(--ul-text-body);
     margin-bottom: 12px;
   }
   .path-item {
     padding: 14px;
     border-radius: 10px;
-    background: #2d3a4a;
+    background: var(--ul-card-bg);
     margin-bottom: 10px;
-    border: 1px solid #374151;
+    border: 1px solid var(--ul-card-border);
     transition: all 0.2s ease;
     cursor: pointer;
   }
   .path-item:hover {
-    background: #374151;
-    border-color: #4b5563;
+    background: var(--ul-card-border);
+    border-color: var(--ul-text-secondary);
   }
   .path-time {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     margin-bottom: 6px;
   }
   .path-coord {
     font-size: 13px;
-    color: #e5e7eb;
+    color: var(--ul-text-body);
   }
   .no-path {
     padding: 40px 0;
     text-align: center;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -1306,7 +1455,7 @@
   .user-list-empty {
     padding: 30px 0;
     text-align: center;
-    color: #9ca3af;
+    color: var(--ul-text-secondary);
   }
   @media (max-width: 768px) {
     .user-map-container {
@@ -1376,6 +1525,31 @@
 </style>
 
 <style>
+  /* ==================== 全局滚动条（响应主题） ====================
+     这段 CSS 不在 scoped 块内，所以无法直接用 scoped CSS 变量。
+     改为通过全局的 html.dark 主题类切换。 */
+
+  /* 浅色主题：默认（无 html.dark 时应用） */
+  .user-map-container .user-list-scroll::-webkit-scrollbar-thumb,
+  .user-map-container .detail-path-list::-webkit-scrollbar-thumb {
+    background: #d1d5db !important;
+  }
+  .user-map-container .user-list-scroll::-webkit-scrollbar-track,
+  .user-map-container .detail-path-list::-webkit-scrollbar-track {
+    background: #f3f4f6 !important;
+  }
+
+  /* 深色主题：仅当 <html class="dark"> 时覆盖 */
+  html.dark .user-map-container .user-list-scroll::-webkit-scrollbar-thumb,
+  html.dark .user-map-container .detail-path-list::-webkit-scrollbar-thumb {
+    background: #4b5563 !important;
+  }
+  html.dark .user-map-container .user-list-scroll::-webkit-scrollbar-track,
+  html.dark .user-map-container .detail-path-list::-webkit-scrollbar-track {
+    background: #1f2937 !important;
+  }
+
+  /* 滚动条尺寸（主题无关） */
   .user-map-container .user-list-scroll::-webkit-scrollbar,
   .user-map-container .detail-path-list::-webkit-scrollbar {
     width: 4px !important;
@@ -1383,11 +1557,6 @@
   }
   .user-map-container .user-list-scroll::-webkit-scrollbar-thumb,
   .user-map-container .detail-path-list::-webkit-scrollbar-thumb {
-    background: #4b5563 !important;
     border-radius: 10px !important;
-  }
-  .user-map-container .user-list-scroll::-webkit-scrollbar-track,
-  .user-map-container .detail-path-list::-webkit-scrollbar-track {
-    background: #1f2937 !important;
   }
 </style>

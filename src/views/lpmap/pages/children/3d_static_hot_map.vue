@@ -12,7 +12,6 @@
               :md="6"
               v-for="card in statsCards"
               :key="card.id"
-              class="mb-10"
             >
               <div class="card-wrapper">
                 <div
@@ -83,9 +82,10 @@
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref } from 'vue'
   import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
-  import { MapLoader } from '../../api/mapLoader'
   import { ElRow, ElCol } from 'element-plus'
-  import { StatsCardsData, HeatMapData, HotmapProgress } from '../../api'
+  import { StatsCardsData, HeatMapData, HotmapProgress } from '../../api/index'
+  import { MapLoader } from '../../api/mapLoader'
+
   // import LogService from '@/services/logServices'
   // const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 全局类型声明
@@ -160,18 +160,41 @@
       const data = await StatsCardsData(params)
       // console.log('后端返回数据:', data)  // 调试信息
 
+      // 空值保护：后端可能返回 null / undefined / 空数组
+      // （例如当天没有统计数据、或者 axios 解包失败）
+      if (!Array.isArray(data) || data.length === 0) {
+        console.warn(
+          '[fetchStatsCardsData] 接口返回空数据，保持卡片默认显示。date=',
+          params.date
+        )
+        return
+      }
+
       // 更新统计卡片数据
+      let matchedCount = 0
       statsCards.value.forEach((card) => {
         const cardData = data.find((item: any) => item.title === card.title)
         // console.log(`匹配卡片 ${card.title}:`, cardData)  // 调试信息
         if (cardData) {
-          card.count = cardData.count
-          card.description = cardData.description
+          // count 可能为 null/undefined，默认 0；description 同理（缺则保留前端默认值）
+          card.count = cardData.count ?? 0
+          if (cardData.description != null) {
+            card.description = cardData.description
+          }
+          matchedCount++
           // console.log(`更新卡片 ${card.title}: count=${card.count}, description=${card.description}`)  // 调试信息
         } else {
           // console.log(`未找到匹配的卡片数据: ${card.title}`)  // 调试信息
         }
       })
+
+      // 全部 3 张卡片都没匹配上时，提示后端字段名可能已变更
+      if (matchedCount === 0) {
+        console.warn(
+          '[fetchStatsCardsData] 返回数据与前端 title 字段全部不匹配，请检查后端 StatsCardData.title 命名。原始数据:',
+          data
+        )
+      }
     } catch (err) {
       console.error('获取统计卡片数据失败:', err)
     }
@@ -350,13 +373,11 @@
 
       // 先初始化热力图，再加载数据
       initHeatMap()
+      // fetchHeatMap() 内部已经 await fetchStatsCardsData()，无需在此重复调用
       await fetchHeatMap()
 
       // 默认显示行政区划
       await showDistricts()
-
-      // 获取统计卡片数据
-      await fetchStatsCardsData()
 
       loading.value = false
     } catch (err: any) {
@@ -404,6 +425,7 @@
   .heat-map-page {
     width: 100%;
     height: 100%;
+    padding: 10px;
     /* background: #111827; */
   }
 
@@ -426,7 +448,7 @@
     gap: 15px;
     /* 控件和卡片之间的间距 */
     margin-bottom: 10px;
-    /* 与地图保持10px距离 */
+    /* 卡片与地图的距离，与页面顶部内边距 10px 保持一致 */
   }
 
   .search-date-row {
@@ -461,6 +483,11 @@
   .search-date-row :deep(.el-date-editor.el-input__wrapper) {
     height: 60px;
     font-size: 18px;
+  }
+
+  /* 日期选择器向右扩展填满可用空间，右边框贴近筛选按钮 */
+  .search-date-row .date-picker {
+    flex: 1;
   }
 
   .search-date-row :deep(.el-button--default) {
@@ -532,8 +559,8 @@
   }
 
   .stats-cards-top {
-    margin-bottom: 10px;
-    /* 与地图保持10px距离 */
+    margin-bottom: 0;
+    /* 卡片与地图的间距统一由 .card-wrapper 的 margin-bottom 控制 */
   }
 
   .card-wrapper {

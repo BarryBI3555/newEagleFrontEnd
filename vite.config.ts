@@ -28,6 +28,13 @@ export default ({ mode }: { mode: string }) => {
     server: {
       port: Number(VITE_PORT),
       proxy: {
+        // /zyxt 规则必须放在 /api 之前（更具体的前缀优先匹配）
+        // 前端发 /zyxt/api/...  →  代理去掉 /zyxt 后转发到后端 /api/...
+        '/zyxt': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/zyxt/, '')
+        },
         '/api': {
           target: VITE_API_PROXY_URL,
           changeOrigin: true

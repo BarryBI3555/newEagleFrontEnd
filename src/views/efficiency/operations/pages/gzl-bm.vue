@@ -133,7 +133,6 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { LogService } from '@/services/logServices'
   import { DailyWorkloadBm } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
 
@@ -474,9 +473,10 @@
 </script>
 
 <style scoped>
-  .el-form-item {
-    height: 0px;
-    line-height: 0px;
+  /* 搜索栏表单项：文字标签与选择框在所属列中垂直居中 */
+  :deep(.art-search-bar .el-form-item) {
+    align-items: center;
+    margin-bottom: 0;
   }
   .custom-header:hover {
     color: var(--el-color-primary-light-3);
