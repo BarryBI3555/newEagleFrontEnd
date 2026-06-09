@@ -373,13 +373,11 @@
 
       // 先初始化热力图，再加载数据
       initHeatMap()
+      // fetchHeatMap() 内部已经 await fetchStatsCardsData()，无需在此重复调用
       await fetchHeatMap()
 
       // 默认显示行政区划
       await showDistricts()
-
-      // 获取统计卡片数据
-      await fetchStatsCardsData()
 
       loading.value = false
     } catch (err: any) {
@@ -485,6 +483,11 @@
   .search-date-row :deep(.el-date-editor.el-input__wrapper) {
     height: 60px;
     font-size: 18px;
+  }
+
+  /* 日期选择器向右扩展填满可用空间，右边框贴近筛选按钮 */
+  .search-date-row .date-picker {
+    flex: 1;
   }
 
   .search-date-row :deep(.el-button--default) {
