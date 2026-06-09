@@ -1,4 +1,4 @@
-const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
+const VITE_API_PROXY_PORT_URL = (import.meta.env.VITE_API_PROXY_PORT_URL || '').replace(/\/$/, '')
 interface LoginResponse {
   success: boolean
   message?: string
@@ -12,9 +12,9 @@ interface RegisterResponse {
 }
 
 export class AuthService {
-  private static readonly LOGIN_URL = `${VITE_API_PROXY_PORT_URL}api/auth/login`
-  private static readonly REGISTER_URL = `${VITE_API_PROXY_PORT_URL}api/auth/register`
-  private static readonly ME_URL = `${VITE_API_PROXY_PORT_URL}api/auth/info`
+  private static readonly LOGIN_URL = `${VITE_API_PROXY_PORT_URL}/zyxt/api/auth/login`
+  private static readonly REGISTER_URL = `${VITE_API_PROXY_PORT_URL}/zyxt/api/auth/register`
+  private static readonly ME_URL = `${VITE_API_PROXY_PORT_URL}/zyxt/api/auth/info`
 
   /**
    * 用户登录

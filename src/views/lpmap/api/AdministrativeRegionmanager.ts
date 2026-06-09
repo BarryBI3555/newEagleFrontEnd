@@ -1,8 +1,5 @@
 import { ref } from 'vue';
-import request from '@/utils/http';
-import { LogService } from '@/services/logServices';
-
-const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
+import { Geocoder, SearchDistrict, DistrictChildren } from './index';
 
 /**
  * 行政区划管理类
@@ -113,10 +110,8 @@ toggleDistricts = async (): Promise<void> => {
         // 获取当前地图中心点
         const center = this.map.getCenter();
 
-        // 通过后端代理获取地理位置信息
-        const geocoderUrl = `/zyxt/api/map/geocoder?location=${center.lat},${center.lng}`;
-
-        const geocodeData = await request.get({ url: geocoderUrl });
+        // 通过后端代理获取地理位置信息（直接调用 index.ts 中的 Geocoder）
+        const geocodeData = await Geocoder(`${center.lat},${center.lng}`);
 
         // 检查响应数据状态
         if (!geocodeData || geocodeData.status !== 0) {
@@ -130,8 +125,7 @@ toggleDistricts = async (): Promise<void> => {
           const addressComponent = geocodeData.result.address_component;
           let areaName =  addressComponent.city;
 
-          const searchUrl = `/api/map/district/search?keyword=${encodeURIComponent(areaName)}`;
-          const searchData = await request.get({ url: searchUrl });
+          const searchData = await SearchDistrict(areaName);
 
           // 检查响应数据状态
           if (!searchData || searchData.status !== 0) {
@@ -171,7 +165,7 @@ toggleDistricts = async (): Promise<void> => {
           }
 
           // 通过后端代理获取下级行政区划
-        const childrenData = await request.get({ url: '/api/map/district/getchildren', params: { id: adcode } });
+          const childrenData = await DistrictChildren(adcode);
 
           if (childrenData && childrenData.status === 0 && childrenData.result) {
             districtsData = childrenData.result;

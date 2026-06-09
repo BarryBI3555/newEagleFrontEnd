@@ -219,7 +219,7 @@
         }
 
         // 发送请求到后端 - 与table_cs.vue保持一致
-        const response = await axios.get('http://localhost:8080/api/aaa/list', {
+        const response = await axios.get('http://localhost:8080/zyxt/api/aaa/list', {
           params: { queryTime: queryParams.queryDate }
         })
 
@@ -416,7 +416,7 @@
   const handleExportAll = async () => {
     try {
       // 获取全部数据，需要调用API获取所有记录
-      const response = await axios.get('http://localhost:8080/api/aaa/list', {
+      const response = await axios.get('http://localhost:8080/zyxt/api/aaa/list', {
         params: { queryTime: searchFormState.value.queryDate }
       })
 

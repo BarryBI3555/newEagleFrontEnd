@@ -273,4 +273,6 @@
 </script>
 
 <style scoped>
+  /* 搜索栏表单项：文字标签与选择框在所属列中垂直居中 */
+  :deep(.art-search-bar .el-form-item) { align-items: center; margin-bottom: 0; }
 </style>

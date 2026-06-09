@@ -146,7 +146,6 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { LogService } from '@/services/logServices'
   import { DailyWorkloadRy } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称（用于 devtools 调试）
@@ -647,6 +646,9 @@
 </script>
 
 <style scoped>
+  /* 搜索栏表单项：文字标签与选择框在所属列中垂直居中 */
+  :deep(.art-search-bar .el-form-item) { align-items: center; margin-bottom: 0; }
+
   /* 自定义表头样式 */
   .custom-header:hover {
     color: var(--el-color-primary-light-3);
