@@ -34,5 +34,17 @@ export const RainCockpit = {
   /** 今日预警措施 */
   getLevelProcesses(params: Record<string, any> = {}): Promise<any> {
     return request.get({ url: 'api/rain/levelProcess', params })
+  },
+  /** 卡片数据 */
+  getCardData(params: Record<string, any> = {}): Promise<any> {
+    return request.get({ url: 'api/rain/cardData', params })
+  },
+  /** 数据报表表格 */
+  getReportTable(params: Record<string, any> = {}): Promise<any> {
+    return request.get({ url: 'api/rain/reportTable', params })
+  },
+  /** 汛期热力图数据（来自 acd_old_case_rain_xq） */
+  getFloodSeasonHeatmapData(params: Record<string, any> = {}): Promise<any> {
+    return request.get({ url: 'api/rain/hotmap', params })
   }
 }

@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { PacllRy } from '../../api'
+  import { dataReport } from '../../api'
 
   defineOptions({ name: 'PacllRyTable' })
 
@@ -189,7 +189,7 @@
           groups: tableApiParams.value.groups ?? '',
           username: tableApiParams.value.username ?? ''
         }
-        const response = await PacllRy(queryParams)
+        const response = await dataReport.axiosRequestPacllRy(queryParams)
         let tableResultData: PacllRyData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -228,7 +228,7 @@
   // ==================== 9. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await PacllRy({ current: 1, size: 9999 })
+      const res = await dataReport.axiosRequestPacllRy({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptGroupMap(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -274,7 +274,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await PacllRy(tableApiParams.value)
+      const res = await dataReport.axiosRequestPacllRy(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as PacllRyData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)

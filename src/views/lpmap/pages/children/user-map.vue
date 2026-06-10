@@ -210,7 +210,7 @@
   import { useSettingStore } from '@/store/modules/setting'
   import { storeToRefs } from 'pinia'
   import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
-  import { GroupList, LatestLocations, LocationProgress, UserTrajectory } from '../../api'
+  import { personalmap } from '../../api'
   import { MapLoader } from '../../api/mapLoader'
   const settingStore = useSettingStore()
   const { isDark } = storeToRefs(settingStore)
@@ -440,8 +440,8 @@
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
 
-      const allGroups = await GroupList(params)
-      const userData = await LatestLocations(params)
+      const allGroups = await personalmap.axiosRequestGroupList(params)
+      const userData = await personalmap.axiosRequestLatestLocations(params)
 
       const groupsWithData = new Set(userData.map((user: any) => user.groupscode))
       let filteredGroups = (allGroups || []).filter((group: any) =>
@@ -490,7 +490,7 @@
 
       // await LogService.userMapLog('筛选人员', params)
 
-      const data = await LatestLocations(params)
+      const data = await personalmap.axiosRequestLatestLocations(params)
       clearOverlays()
 
       userList.value = data || []
@@ -581,7 +581,7 @@
 
     locationProgressTimer = setInterval(async () => {
       try {
-        const res = await LocationProgress(params)
+        const res = await personalmap.axiosRequestLocationProgress(params)
 
         if (res.complete) {
           locationProgressPercent.value = 100
@@ -663,7 +663,7 @@
 
       const params: Record<string, any> = {}
       if (selectedDate.value) params.date = selectedDate.value
-      const data = await UserTrajectory(usercode, params)
+      const data = await personalmap.axiosRequestUserTrajectory(usercode, params)
 
       if (!data || data.length === 0) {
         error.value = '该用户当日无轨迹数据'

@@ -113,7 +113,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { DailyWorkloadRs } from '../../api'
+  import { dailyWorkload } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
   // 组件名称
   defineOptions({ name: 'GzlRsTable' })
@@ -243,7 +243,7 @@
         }
 
         // 最终接口
-        const response = await DailyWorkloadRs(queryParams)
+        const response = await dailyWorkload.axiosRequestDailyWorkloadRs(queryParams)
 
         // axios 返回的已经是 res.data.data（后端返回的数据部分）
         let tableResultData: DailyWorkloadRsData[] = []
@@ -324,7 +324,7 @@
       // 记录刷新日志
       // await LogService.tableLog('人伤当日工作量统计', '刷新', tableApiParams.value)
 
-      const res = await DailyWorkloadRs({ size: 9999 })
+      const res = await dailyWorkload.axiosRequestDailyWorkloadRs({ size: 9999 })
       if (Array.isArray(res) && res.length) {
         allOriginData.value = [...res]
         buildDeptOptions(allOriginData.value)
@@ -392,7 +392,7 @@
     try {
       // await LogService.tableLog('人伤当日工作量统计', '导出全部', tableApiParams.value)
 
-      const res = await DailyWorkloadRs(tableApiParams.value)
+      const res = await dailyWorkload.axiosRequestDailyWorkloadRs(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as DailyWorkloadRsData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
