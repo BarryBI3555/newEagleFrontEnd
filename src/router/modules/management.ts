@@ -29,6 +29,16 @@ export const managementRoutes: AppRouteRecord = {
         keepAlive: false,
         roles: ['R_SUPER', 'R_ADMIN']
       }
+    },
+    {
+      path: 'flood-season',
+      name: 'FloodSeasonCockpit',
+      component: '/management/pages/flood-season',
+      meta: {
+        title: 'menus.management.floodSeason',
+        keepAlive: false,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
     }
   ]
 }

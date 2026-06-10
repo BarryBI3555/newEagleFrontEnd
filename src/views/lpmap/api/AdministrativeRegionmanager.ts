@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { Geocoder, SearchDistrict, DistrictChildren } from './index';
+import { geocoder, searchDistrict, districtChildren } from './index';
 
 /**
  * 行政区划管理类
@@ -111,7 +111,7 @@ toggleDistricts = async (): Promise<void> => {
         const center = this.map.getCenter();
 
         // 通过后端代理获取地理位置信息（直接调用 index.ts 中的 Geocoder）
-        const geocodeData = await Geocoder(`${center.lat},${center.lng}`);
+        const geocodeData = await geocoder(`${center.lat},${center.lng}`);
 
         // 检查响应数据状态
         if (!geocodeData || geocodeData.status !== 0) {
@@ -125,7 +125,7 @@ toggleDistricts = async (): Promise<void> => {
           const addressComponent = geocodeData.result.address_component;
           let areaName =  addressComponent.city;
 
-          const searchData = await SearchDistrict(areaName);
+          const searchData = await searchDistrict(areaName);
 
           // 检查响应数据状态
           if (!searchData || searchData.status !== 0) {
@@ -165,7 +165,7 @@ toggleDistricts = async (): Promise<void> => {
           }
 
           // 通过后端代理获取下级行政区划
-          const childrenData = await DistrictChildren(adcode);
+          const childrenData = await districtChildren(adcode);
 
           if (childrenData && childrenData.status === 0 && childrenData.result) {
             districtsData = childrenData.result;

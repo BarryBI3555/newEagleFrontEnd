@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { PacllBm } from '../../api'
+  import { dataReport } from '../../api'
 
   defineOptions({ name: 'PacllBmTable' })
 
@@ -183,7 +183,7 @@
           tjDate: tableApiParams.value.tjDate || '',
           comname: tableApiParams.value.comname ?? ''
         }
-        const response = await PacllBm(queryParams)
+        const response = await dataReport.axiosRequestPacllBm(queryParams)
         let tableResultData: PacllBmData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -254,7 +254,7 @@
   // ==================== 8. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await PacllBm({ current: 1, size: 9999 })
+      const res = await dataReport.axiosRequestPacllBm({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptOptions(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -313,7 +313,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await PacllBm(tableApiParams.value)
+      const res = await dataReport.axiosRequestPacllBm(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as PacllBmData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })

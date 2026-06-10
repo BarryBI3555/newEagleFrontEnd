@@ -74,7 +74,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { PflsgnKhq } from '../../api'
+  import { accidentYearLossRate } from '../../api'
 
   defineOptions({ name: 'PflsgnKhqTable' })
 
@@ -181,7 +181,7 @@
           tjDate: tableApiParams.value.tjDate || '',
           comnameSgs: tableApiParams.value.comnameSgs ?? ''
         }
-        const response = await PflsgnKhq(queryParams)
+        const response = await accidentYearLossRate.axiosRequestPflsgnKhq(queryParams)
         let tableResultData: PflsgnKhqData[] = []
         if (Array.isArray(response)) {
           tableResultData = response
@@ -239,7 +239,7 @@
   // ==================== 7. 操作 ====================
   const handleRefresh = async () => {
     try {
-      const res = await PflsgnKhq({ current: 1, size: 9999 })
+      const res = await accidentYearLossRate.axiosRequestPflsgnKhq({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         buildDeptOptions(res)
         currentMaxTjTime.value = res[0].maxTjTime || ''
@@ -292,7 +292,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await PflsgnKhq(tableApiParams.value)
+      const res = await accidentYearLossRate.axiosRequestPflsgnKhq(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as PflsgnKhqData[]
       if (!data.length) { ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' }); return }
       const exportData = data.map(exportColumns)

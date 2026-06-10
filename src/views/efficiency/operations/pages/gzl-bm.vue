@@ -133,7 +133,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { DailyWorkloadBm } from '../../api'
+  import { dailyWorkload } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
 
   // 组件名称（用于 devtools 调试）
@@ -272,7 +272,7 @@
           comName: tableApiParams.value.comName ?? ''
         }
 
-        const response = await DailyWorkloadBm(queryParams)
+        const response = await dailyWorkload.axiosRequestDailyWorkloadBm(queryParams)
 
         // axios 返回的已经是 res.data.data（后端返回的数据部分）
         let tableResultData: DailyWorkloadBmData[] = []
@@ -359,7 +359,7 @@
       // // 记录刷新日志
       // await LogService.tableLog('部门当日工作量统计', '刷新', tableApiParams.value)
 
-      const res = await DailyWorkloadBm({ current: 1, size: 9999 })
+      const res = await dailyWorkload.axiosRequestDailyWorkloadBm({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         allOriginData.value = [...res]
         buildDeptOptions(allOriginData.value)
@@ -431,7 +431,7 @@
 
   const handleExportAll = async () => {
     try {
-      const res = await DailyWorkloadBm(tableApiParams.value)
+      const res = await dailyWorkload.axiosRequestDailyWorkloadBm(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as DailyWorkloadBmData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })

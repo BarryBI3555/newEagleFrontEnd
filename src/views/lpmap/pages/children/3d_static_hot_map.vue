@@ -83,7 +83,7 @@
   import { onMounted, onBeforeUnmount, ref } from 'vue'
   import { AdministrativeRegionManager } from '../../api/AdministrativeRegionmanager'
   import { ElRow, ElCol } from 'element-plus'
-  import { StatsCardsData, HeatMapData, HotmapProgress } from '../../api/index'
+  import { hotmap } from '../../api'
   import { MapLoader } from '../../api/mapLoader'
 
   // import LogService from '@/services/logServices'
@@ -157,7 +157,7 @@
 
       // console.log('请求统计数据URL:', `${VITE_API_PROXY_PORT_URL}api/statsCardsData`, params)  // 调试信息
 
-      const data = await StatsCardsData(params)
+      const data = await hotmap.axiosRequestStatsCardsData(params)
       // console.log('后端返回数据:', data)  // 调试信息
 
       // 空值保护：后端可能返回 null / undefined / 空数组
@@ -235,7 +235,7 @@
 
       const params = selectedDate.value ? { date: selectedDate.value } : {}
 
-      const data = await HeatMapData(params)
+      const data = await hotmap.axiosRequestHeatMapData(params)
       // await LogService.hotmapLog('筛选并查看', params)
 
       window.heatData = data
@@ -260,7 +260,7 @@
    */
   const pollProgress = async (params: Record<string, string | undefined>) => {
     try {
-      const res: any = await HotmapProgress(params)
+      const res: any = await hotmap.axiosRequestHotmapProgress(params)
 
       if (res.complete) {
         progressPercent.value = 100
@@ -270,7 +270,7 @@
           progressTimer = null
         }
         // 重新获取完整数据
-        const data: any[] = (await HeatMapData(params)) as any[]
+        const data: any[] = (await hotmap.axiosRequestHeatMapData(params)) as any[]
         window.heatData = data
         if (heat) {
           heat.setData(window.heatData)
@@ -284,7 +284,7 @@
         const currentCachedCount = res.cachedCount ?? 0
         if (heat && currentCachedCount !== lastCachedCount) {
           lastCachedCount = currentCachedCount
-          const data: any[] = (await HeatMapData(params)) as any[]
+          const data: any[] = (await hotmap.axiosRequestHeatMapData(params)) as any[]
           window.heatData = data
           heat.setData(window.heatData)
         }

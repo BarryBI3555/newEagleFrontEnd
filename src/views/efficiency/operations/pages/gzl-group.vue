@@ -137,7 +137,7 @@
   import { ElNotification } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import * as XLSX from 'xlsx'
-  import { DailyWorkloadGroup } from '../../api'
+  import { dailyWorkload } from '../../api'
   const VITE_API_PROXY_PORT_URL = import.meta.env.VITE_API_PROXY_PORT_URL
 
   // 组件名称（用于 devtools 调试）
@@ -355,7 +355,7 @@
           groups: tableApiParams.value.groups ?? ''
         }
 
-        const response = await DailyWorkloadGroup(queryParams)
+        const response = await dailyWorkload.axiosRequestDailyWorkloadGroup(queryParams)
 
         // axios 返回的已经是 res.data.data（后端返回的数据部分）
         let tableResultData: DailyWorkloadGroupData[] = []
@@ -444,7 +444,7 @@
       // // 记录刷新日志
       // await LogService.tableLog('小组当日工作量', '刷新', tableApiParams.value)
 
-      const res = await DailyWorkloadGroup({ current: 1, size: 9999 })
+      const res = await dailyWorkload.axiosRequestDailyWorkloadGroup({ current: 1, size: 9999 })
       if (Array.isArray(res) && res.length) {
         allOriginData.value = [...res]
         buildDeptGroupMap(allOriginData.value)
@@ -521,7 +521,7 @@
     try {
       // await LogService.tableLog('小组当日工作量', '导出全部', tableApiParams.value)
 
-      const res = await DailyWorkloadGroup(tableApiParams.value)
+      const res = await dailyWorkload.axiosRequestDailyWorkloadGroup(tableApiParams.value)
       const data = (Array.isArray(res) ? res : []) as DailyWorkloadGroupData[]
       if (!data.length) {
         ElNotification({ title: '提示', message: '暂无数据可导出', type: 'warning' })
