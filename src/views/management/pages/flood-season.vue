@@ -1,7 +1,7 @@
 <template>
   <div class="flood-cockpit" :style="{ minHeight: containerMinHeight }">
     <!-- ==================== 顶部标题 ==================== -->
-    <p class="cockpit-title">汛期驾驶舱</p>
+    <p class="cockpit-title">成都理赔中心——汛期驾驶舱</p>
 
     <!-- ==================== 气象信息滚动 ==================== -->
     <div class="scroll-bar">
@@ -34,7 +34,11 @@
 
         <!-- 地图容器 -->
         <div class="map-wrapper">
-          <div id="rain-map-container" class="map-container" :class="{ 'map-fullscreen': isMapFullscreen }">
+          <div
+            id="rain-map-container"
+            class="map-container"
+            :class="{ 'map-fullscreen': isMapFullscreen }"
+          >
             <div class="map-toolbar">
               <div
                 class="district-img-btn"
@@ -50,7 +54,9 @@
                 @click="toggleMapFullscreen"
                 title="切换全屏"
               >
-                <ArtSvgIcon :icon="isMapFullscreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'" />
+                <ArtSvgIcon
+                  :icon="isMapFullscreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'"
+                />
               </div>
             </div>
             <!-- 当前预警措施浮窗（地图左下角） -->
@@ -66,11 +72,11 @@
                 </span>
               </div>
 
-              <div class="place-panel-body" v-show="!isPlacePanelCollapsed">
+              <div class="place-panel-body" v-show="!isPlacePanelCollapsed"
+                :style="{ '--scrollbar-danger-color': scrollbarDangerColor }">
                 <div v-if="processes.length === 0" class="place-empty">今日暂无预警措施</div>
                 <div v-else class="process-list">
                   <div v-for="p in processes" :key="p.number" class="process-item">
-                    <span class="process-number">{{ p.number }}</span>
                     <span class="process-text">{{ p.measure }}</span>
                   </div>
                 </div>
@@ -80,8 +86,8 @@
             <!-- 停车场详情面板（点击 marker 时显示） -->
             <div v-if="selectedPlace" class="parking-detail-panel">
               <div class="parking-detail-header">
-                <span class="parking-detail-title" :title="selectedPlace.pName">
-                  {{ selectedPlace.pName }}
+                <span class="parking-detail-title" :title="selectedPlace.pname">
+                  {{ selectedPlace.pname }}
                 </span>
                 <span class="parking-detail-close" title="关闭" @click="selectedPlace = null"
                   >✕</span
@@ -173,11 +179,15 @@
                   </div>
                   <div class="report-metric col-span-2">
                     <span class="metric-label">估计赔款(万元)</span>
-                    <span class="metric-value highlight">{{ row.sumestipaid != null ? Number(row.sumestipaid).toFixed(2) : '—' }}</span>
+                    <span class="metric-value highlight">{{
+                      row.sumestipaid != null ? Number(row.sumestipaid).toFixed(2) : '—'
+                    }}</span>
                   </div>
                   <div class="report-metric col-span-2">
                     <span class="metric-label">已赔付金额(万元)</span>
-                    <span class="metric-value highlight">{{ row.sumpaid_lj != null ? Number(row.sumpaid_lj).toFixed(2) : '—' }}</span>
+                    <span class="metric-value highlight">{{
+                      row.sumpaid_lj != null ? Number(row.sumpaid_lj).toFixed(2) : '—'
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -189,7 +199,7 @@
         <div class="right-block tabs-block">
           <ElTabs v-model="activeTab" class="rain-tabs">
             <ElTabPane label="物资" name="items">
-                           <div class="items-list" :style="{ height: tabsTableHeight + 'px' }">
+              <div class="items-list" :style="{ height: tabsTableHeight + 'px' }">
                 <div v-if="items.length === 0" class="items-empty">暂无物资数据</div>
                 <div v-else class="items-rows">
                   <div v-for="item in items" :key="item.id" class="items-card">
@@ -210,12 +220,16 @@
                             'num-highlight',
                             getStatusInfo(getProgressPercent(item)).className
                           ]"
-                        >{{ item.surplus }}</span>
+                          >{{ item.surplus }}</span
+                        >
                       </div>
                       <div class="items-metric">
                         <span class="items-metric-label">状态</span>
                         <span
-                          :class="['status-badge', getStatusInfo(getProgressPercent(item)).className]"
+                          :class="[
+                            'status-badge',
+                            getStatusInfo(getProgressPercent(item)).className
+                          ]"
                         >
                           {{ getStatusInfo(getProgressPercent(item)).text }}
                         </span>
@@ -244,7 +258,7 @@
               <div class="cards-list" :style="{ height: tabsTableHeight + 'px' }">
                 <div v-if="repairs.length === 0" class="items-empty">暂无施救单位数据</div>
                 <div v-else class="cards-scroll">
-                                   <div v-for="r in repairs" :key="r.id" class="rescue-card">
+                  <div v-for="r in repairs" :key="r.id" class="rescue-card">
                     <div class="rescue-card-top">
                       <div class="rescue-icon">
                         <ArtSvgIcon icon="ri:heart-pulse-line" />
@@ -262,7 +276,9 @@
                       </div>
                       <div class="rescue-info-row">
                         <span class="rescue-info-label">服务区域</span>
-                        <span class="rescue-info-value region" :title="r.region">{{ r.region || '—' }}</span>
+                        <span class="rescue-info-value region" :title="r.region">{{
+                          r.region || '—'
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -345,7 +361,7 @@
   }
   interface CarPlace {
     id: number
-    pName: string
+    pname: string
     address: string
     region: string
     conPerson: string
@@ -466,6 +482,17 @@
   }
   const processes = ref<LevelProcess[]>([])
 
+  // 滚动条颜色：取 processes 中最小编号（最危险）的颜色渐变
+  // 编号越小越危险 → 红色渐变；编号越大越安全 → 绿色
+  const scrollbarDangerColor = computed(() => {
+    if (!processes.value.length) return 'var(--fs-scrollbar-thumb)'
+    const minNumber = Math.min(...processes.value.map((p) => p.number))
+    // danger 1~3: 红, 4~6: 橙, 7+: 绿
+    if (minNumber <= 3) return '#ef4444'
+    if (minNumber <= 6) return '#f97316'
+    return '#22c55e'
+  })
+
   // ==================== 停车场数据（地图 marker） ====================
   const pendingPlaces = ref<CarPlace[]>([])
 
@@ -535,7 +562,7 @@
         statsCards[3].count = cd.ja_lj || 0
         statsCards[4].count = cd.sumpaid_lj || 0
         const dateStr = cd.tjdate ? cd.tjdate.substring(0, 10) : ''
-        statsCards.forEach(card => {
+        statsCards.forEach((card) => {
           card.description = dateStr
         })
       }
@@ -667,7 +694,7 @@
   const initHeatMap = () => {
     if (!map || !window.TMap?.visualization?.Heat) return
     heat = new window.TMap.visualization.Heat({
-      max: 3,
+      max: 20,
       min: 0,
       height: 60,
       radius: 30,
@@ -797,7 +824,7 @@
   }
   .card-wrapper :deep(.text-sm) {
     font-size: 11px !important;
-    line-height: 1.05;  
+    line-height: 1.05;
   }
   .card-wrapper :deep(.size-11) {
     width: 28px !important;
@@ -838,7 +865,7 @@
     border-radius: 0;
   }
 
-   .map-toolbar {
+  .map-toolbar {
     position: absolute;
     top: 12px;
     left: 12px;
@@ -884,7 +911,7 @@
     box-shadow: 0 0 10px var(--fs-accent-glow);
   }
 
-   .map-loading {
+  .map-loading {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1007,6 +1034,7 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
+    max-height: 260px;
     z-index: 9999;
     width: 320px;
     background: var(--fs-bg-panel);
@@ -1080,27 +1108,11 @@
   .process-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
     background: var(--fs-bg-inner);
     border: 1px solid var(--fs-border);
     border-radius: 8px;
     padding: 10px 12px;
     line-height: 1.6;
-  }
-
-  .process-number {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 22px;
-    padding: 0 8px;
-    background: var(--fs-accent);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 10px;
   }
 
   .process-text {
@@ -1114,7 +1126,7 @@
     width: 4px;
   }
   .place-panel-body::-webkit-scrollbar-thumb {
-    background: var(--fs-scrollbar-thumb);
+    background: var(--scrollbar-danger-color, var(--fs-scrollbar-thumb));
     border-radius: 10px;
   }
   .place-panel-body::-webkit-scrollbar-track {
@@ -1394,7 +1406,9 @@
     border-radius: 10px;
     padding: 10px 12px;
     color: var(--fs-text-primary);
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .items-card:hover {
@@ -1611,7 +1625,9 @@
     border: 0.5px solid var(--fs-border);
     border-radius: 10px;
     padding: 10px 12px;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .report-card:hover {
@@ -1705,7 +1721,9 @@
     border: 0.5px solid var(--fs-border);
     border-radius: 10px;
     padding: 10px 12px;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .rescue-card:hover {
@@ -1796,7 +1814,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .liaison-card:hover {
@@ -1887,151 +1907,166 @@
 </style>
 
 <style>
-/* ==================== 汛期驾驶舱主题变量 ====================
+  /* ==================== 汛期驾驶舱主题变量 ====================
    利用项目已有的 html.dark 主题切换机制，
    在此处定义亮/暗主题对应的 CSS 变量，非 scoped，全局生效 */
 
-:root {
-  /* 背景色 */
-  --fs-bg-panel: rgba(17, 17, 17, 0.7);
-  --fs-bg-card: rgba(31, 41, 55, 0.6);
-  --fs-bg-card-hover: rgba(31, 41, 55, 0.85);
-  --fs-bg-inner: rgba(31, 41, 55, 0.7);
-  --fs-bg-input: rgba(31, 41, 55, 0.6);
-  --fs-bg-inner-light: rgba(31, 41, 55, 0.4);
-  --fs-bg-blue: rgba(59, 130, 246, 0.2);
-  --fs-bg-purple: rgba(139, 92, 246, 0.2);
-  --fs-bg-red: rgba(245, 101, 101, 0.15);
+  :root {
+    /* 背景色 */
+    --fs-bg-panel: rgba(17, 17, 17, 0.7);
+    --fs-bg-card: rgba(31, 41, 55, 0.6);
+    --fs-bg-card-hover: rgba(31, 41, 55, 0.85);
+    --fs-bg-inner: rgba(31, 41, 55, 0.7);
+    --fs-bg-input: rgba(31, 41, 55, 0.6);
+    --fs-bg-inner-light: rgba(31, 41, 55, 0.4);
+    --fs-bg-blue: rgba(59, 130, 246, 0.2);
+    --fs-bg-purple: rgba(139, 92, 246, 0.2);
+    --fs-bg-red: rgba(245, 101, 101, 0.15);
 
-  /* 文字色 */
-  --fs-text-primary: #f3f4f6;
-  --fs-text-secondary: #e5e7eb;
-  --fs-text-muted: #9ca3af;
-  --fs-text-empty: #6b7280;
+    /* 文字色 */
+    --fs-text-primary: #f3f4f6;
+    --fs-text-secondary: #e5e7eb;
+    --fs-text-muted: #9ca3af;
+    --fs-text-empty: #6b7280;
 
-  /* 边框色 */
-  --fs-border: rgba(156, 163, 175, 0.12);
-  --fs-border-light: rgba(156, 163, 175, 0.1);
-  --fs-border-medium: rgba(156, 163, 175, 0.18);
-  --fs-border-strong: rgba(156, 163, 175, 0.25);
+    /* 边框色 */
+    --fs-border: rgba(156, 163, 175, 0.12);
+    --fs-border-light: rgba(156, 163, 175, 0.1);
+    --fs-border-medium: rgba(156, 163, 175, 0.18);
+    --fs-border-strong: rgba(156, 163, 175, 0.25);
 
-  /* 强调色 */
-  --fs-accent: #60a5fa;
-  --fs-accent-bg: rgba(96, 165, 250, 0.12);
-  --fs-accent-border: rgba(96, 165, 250, 0.3);
-  --fs-accent-glow: rgba(96, 165, 250, 0.25);
-  --fs-yellow: #fbbf24;
-  --fs-green: #34d399;
-  --fs-red: #f87171;
-  --fs-purple: #a78bfa;
-  --fs-orange: #ff6b35;
-  --fs-blue-badge: #60a5fa;
-  --fs-bg-badge: rgba(96, 165, 250, 0.12);
-  --fs-border-badge: rgba(96, 165, 250, 0.3);
+    /* 强调色 */
+    --fs-accent: #60a5fa;
+    --fs-accent-bg: rgba(96, 165, 250, 0.12);
+    --fs-accent-border: rgba(96, 165, 250, 0.3);
+    --fs-accent-glow: rgba(96, 165, 250, 0.25);
+    --fs-yellow: #fbbf24;
+    --fs-green: #34d399;
+    --fs-red: #f87171;
+    --fs-purple: #a78bfa;
+    --fs-orange: #ff6b35;
+    --fs-blue-badge: #60a5fa;
+    --fs-bg-badge: rgba(96, 165, 250, 0.12);
+    --fs-border-badge: rgba(96, 165, 250, 0.3);
 
-  /* 滚动条 */
-  --fs-scrollbar-thumb: #4b5563;
-  --fs-scrollbar-track: transparent;
+    /* 滚动条 */
+    --fs-scrollbar-thumb: #4b5563;
+    --fs-scrollbar-track: transparent;
 
-  /* 地图工具栏 */
-  --fs-toolbar-bg: rgba(17, 24, 39, 0.88);
-  --fs-toolbar-border: rgba(156, 163, 175, 0.2);
-  --fs-toolbar-btn-bg: rgba(55, 65, 81, 0.6);
-  --fs-toolbar-btn-border: rgba(156, 163, 175, 0.15);
-  --fs-toolbar-btn-color: #9ca3af;
-  --fs-toolbar-btn-hover-bg: rgba(75, 85, 99, 0.8);
-  --fs-toolbar-btn-hover-border: rgba(156, 163, 175, 0.3);
-  --fs-toolbar-btn-hover-color: #f3f4f6;
+    /* 地图工具栏 */
+    --fs-toolbar-bg: rgba(17, 24, 39, 0.88);
+    --fs-toolbar-border: rgba(156, 163, 175, 0.2);
+    --fs-toolbar-btn-bg: rgba(55, 65, 81, 0.6);
+    --fs-toolbar-btn-border: rgba(156, 163, 175, 0.15);
+    --fs-toolbar-btn-color: #9ca3af;
+    --fs-toolbar-btn-hover-bg: rgba(75, 85, 99, 0.8);
+    --fs-toolbar-btn-hover-border: rgba(156, 163, 175, 0.3);
+    --fs-toolbar-btn-hover-color: #f3f4f6;
 
-  /* 标题渐变 */
-  --fs-title-bg: linear-gradient(90deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.95));
-}
+    /* 标题渐变 */
+    --fs-title-bg: linear-gradient(
+      90deg,
+      rgba(31, 41, 55, 0.95),
+      rgba(17, 24, 39, 0.95),
+      rgba(31, 41, 55, 0.95)
+    );
+  }
 
-/* 暗色主题：覆盖为当前值（与页面默认深色一致） */
-html.dark {
-  --fs-bg-panel: rgba(17, 17, 17, 0.7);
-  --fs-bg-card: rgba(31, 41, 55, 0.6);
-  --fs-bg-card-hover: rgba(31, 41, 55, 0.85);
-  --fs-bg-inner: rgba(31, 41, 55, 0.7);
-  --fs-bg-input: rgba(31, 41, 55, 0.6);
-  --fs-bg-inner-light: rgba(31, 41, 55, 0.4);
-  --fs-bg-blue: rgba(59, 130, 246, 0.2);
-  --fs-bg-purple: rgba(139, 92, 246, 0.2);
-  --fs-bg-red: rgba(245, 101, 101, 0.15);
-  --fs-text-primary: #f3f4f6;
-  --fs-text-secondary: #e5e7eb;
-  --fs-text-muted: #9ca3af;
-  --fs-text-empty: #6b7280;
-  --fs-border: rgba(156, 163, 175, 0.12);
-  --fs-border-light: rgba(156, 163, 175, 0.1);
-  --fs-border-medium: rgba(156, 163, 175, 0.18);
-  --fs-border-strong: rgba(156, 163, 175, 0.25);
-  --fs-accent: #60a5fa;
-  --fs-accent-bg: rgba(96, 165, 250, 0.12);
-  --fs-accent-border: rgba(96, 165, 250, 0.3);
-  --fs-accent-glow: rgba(96, 165, 250, 0.25);
-  --fs-yellow: #fbbf24;
-  --fs-green: #34d399;
-  --fs-red: #f87171;
-  --fs-purple: #a78bfa;
-  --fs-orange: #ff6b35;
-  --fs-blue-badge: #60a5fa;
-  --fs-bg-badge: rgba(96, 165, 250, 0.12);
-  --fs-border-badge: rgba(96, 165, 250, 0.3);
-  --fs-scrollbar-thumb: #4b5563;
-  --fs-scrollbar-track: transparent;
-  --fs-toolbar-bg: rgba(17, 24, 39, 0.88);
-  --fs-toolbar-border: rgba(156, 163, 175, 0.2);
-  --fs-toolbar-btn-bg: rgba(55, 65, 81, 0.6);
-  --fs-toolbar-btn-border: rgba(156, 163, 175, 0.15);
-  --fs-toolbar-btn-color: #9ca3af;
-  --fs-toolbar-btn-hover-bg: rgba(75, 85, 99, 0.8);
-  --fs-toolbar-btn-hover-border: rgba(156, 163, 175, 0.3);
-  --fs-toolbar-btn-hover-color: #f3f4f6;
-  --fs-title-bg: linear-gradient(90deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.95));
-}
+  /* 暗色主题：覆盖为当前值（与页面默认深色一致） */
+  html.dark {
+    --fs-bg-panel: rgba(17, 17, 17, 0.7);
+    --fs-bg-card: rgba(31, 41, 55, 0.6);
+    --fs-bg-card-hover: rgba(31, 41, 55, 0.85);
+    --fs-bg-inner: rgba(31, 41, 55, 0.7);
+    --fs-bg-input: rgba(31, 41, 55, 0.6);
+    --fs-bg-inner-light: rgba(31, 41, 55, 0.4);
+    --fs-bg-blue: rgba(59, 130, 246, 0.2);
+    --fs-bg-purple: rgba(139, 92, 246, 0.2);
+    --fs-bg-red: rgba(245, 101, 101, 0.15);
+    --fs-text-primary: #f3f4f6;
+    --fs-text-secondary: #e5e7eb;
+    --fs-text-muted: #9ca3af;
+    --fs-text-empty: #6b7280;
+    --fs-border: rgba(156, 163, 175, 0.12);
+    --fs-border-light: rgba(156, 163, 175, 0.1);
+    --fs-border-medium: rgba(156, 163, 175, 0.18);
+    --fs-border-strong: rgba(156, 163, 175, 0.25);
+    --fs-accent: #60a5fa;
+    --fs-accent-bg: rgba(96, 165, 250, 0.12);
+    --fs-accent-border: rgba(96, 165, 250, 0.3);
+    --fs-accent-glow: rgba(96, 165, 250, 0.25);
+    --fs-yellow: #fbbf24;
+    --fs-green: #34d399;
+    --fs-red: #f87171;
+    --fs-purple: #a78bfa;
+    --fs-orange: #ff6b35;
+    --fs-blue-badge: #60a5fa;
+    --fs-bg-badge: rgba(96, 165, 250, 0.12);
+    --fs-border-badge: rgba(96, 165, 250, 0.3);
+    --fs-scrollbar-thumb: #4b5563;
+    --fs-scrollbar-track: transparent;
+    --fs-toolbar-bg: rgba(17, 24, 39, 0.88);
+    --fs-toolbar-border: rgba(156, 163, 175, 0.2);
+    --fs-toolbar-btn-bg: rgba(55, 65, 81, 0.6);
+    --fs-toolbar-btn-border: rgba(156, 163, 175, 0.15);
+    --fs-toolbar-btn-color: #9ca3af;
+    --fs-toolbar-btn-hover-bg: rgba(75, 85, 99, 0.8);
+    --fs-toolbar-btn-hover-border: rgba(156, 163, 175, 0.3);
+    --fs-toolbar-btn-hover-color: #f3f4f6;
+    --fs-title-bg: linear-gradient(
+      90deg,
+      rgba(31, 41, 55, 0.95),
+      rgba(17, 24, 39, 0.95),
+      rgba(31, 41, 55, 0.95)
+    );
+  }
 
-/* 亮色主题 */
-html:not(.dark) {
-  --fs-bg-panel: rgba(249, 250, 251, 0.85);
-  --fs-bg-card: rgba(255, 255, 255, 0.85);
-  --fs-bg-card-hover: rgba(243, 245, 249, 0.95);
-  --fs-bg-inner: rgba(255, 255, 255, 0.8);
-  --fs-bg-input: rgba(243, 245, 249, 0.8);
-  --fs-bg-inner-light: rgba(249, 250, 251, 0.6);
-  --fs-bg-blue: rgba(59, 130, 246, 0.08);
-  --fs-bg-purple: rgba(139, 92, 246, 0.08);
-  --fs-bg-red: rgba(245, 101, 101, 0.08);
-  --fs-text-primary: #1f2937;
-  --fs-text-secondary: #374151;
-  --fs-text-muted: #6b7280;
-  --fs-text-empty: #9ca3af;
-  --fs-border: rgba(0, 0, 0, 0.08);
-  --fs-border-light: rgba(0, 0, 0, 0.05);
-  --fs-border-medium: rgba(0, 0, 0, 0.1);
-  --fs-border-strong: rgba(0, 0, 0, 0.15);
-  --fs-accent: #3b82f6;
-  --fs-accent-bg: rgba(59, 130, 246, 0.08);
-  --fs-accent-border: rgba(59, 130, 246, 0.25);
-  --fs-accent-glow: rgba(59, 130, 246, 0.15);
-  --fs-yellow: #d97706;
-  --fs-green: #059669;
-  --fs-red: #dc2626;
-  --fs-purple: #7c3aed;
-  --fs-orange: #ea580c;
-  --fs-blue-badge: #3b82f6;
-  --fs-bg-badge: rgba(59, 130, 246, 0.1);
-  --fs-border-badge: rgba(59, 130, 246, 0.25);
-  --fs-scrollbar-thumb: #d1d5db;
-  --fs-scrollbar-track: transparent;
-  --fs-toolbar-bg: rgba(255, 255, 255, 0.88);
-  --fs-toolbar-border: rgba(0, 0, 0, 0.08);
-  --fs-toolbar-btn-bg: rgba(255, 255, 255, 0.8);
-  --fs-toolbar-btn-border: rgba(0, 0, 0, 0.08);
-  --fs-toolbar-btn-color: #6b7280;
-  --fs-toolbar-btn-hover-bg: rgba(59, 130, 246, 0.1);
-  --fs-toolbar-btn-hover-border: rgba(59, 130, 246, 0.25);
-  --fs-toolbar-btn-hover-color: #3b82f6;
-  --fs-title-bg: linear-gradient(90deg, rgba(219, 228, 239, 0.95), rgba(243, 245, 249, 0.95), rgba(219, 228, 239, 0.95));
-}
+  /* 亮色主题 */
+  html:not(.dark) {
+    --fs-bg-panel: rgba(249, 250, 251, 0.85);
+    --fs-bg-card: rgba(255, 255, 255, 0.85);
+    --fs-bg-card-hover: rgba(243, 245, 249, 0.95);
+    --fs-bg-inner: rgba(255, 255, 255, 0.8);
+    --fs-bg-input: rgba(243, 245, 249, 0.8);
+    --fs-bg-inner-light: rgba(249, 250, 251, 0.6);
+    --fs-bg-blue: rgba(59, 130, 246, 0.08);
+    --fs-bg-purple: rgba(139, 92, 246, 0.08);
+    --fs-bg-red: rgba(245, 101, 101, 0.08);
+    --fs-text-primary: #1f2937;
+    --fs-text-secondary: #374151;
+    --fs-text-muted: #6b7280;
+    --fs-text-empty: #9ca3af;
+    --fs-border: rgba(0, 0, 0, 0.08);
+    --fs-border-light: rgba(0, 0, 0, 0.05);
+    --fs-border-medium: rgba(0, 0, 0, 0.1);
+    --fs-border-strong: rgba(0, 0, 0, 0.15);
+    --fs-accent: #3b82f6;
+    --fs-accent-bg: rgba(59, 130, 246, 0.08);
+    --fs-accent-border: rgba(59, 130, 246, 0.25);
+    --fs-accent-glow: rgba(59, 130, 246, 0.15);
+    --fs-yellow: #d97706;
+    --fs-green: #059669;
+    --fs-red: #dc2626;
+    --fs-purple: #7c3aed;
+    --fs-orange: #ea580c;
+    --fs-blue-badge: #3b82f6;
+    --fs-bg-badge: rgba(59, 130, 246, 0.1);
+    --fs-border-badge: rgba(59, 130, 246, 0.25);
+    --fs-scrollbar-thumb: #d1d5db;
+    --fs-scrollbar-track: transparent;
+    --fs-toolbar-bg: rgba(255, 255, 255, 0.88);
+    --fs-toolbar-border: rgba(0, 0, 0, 0.08);
+    --fs-toolbar-btn-bg: rgba(255, 255, 255, 0.8);
+    --fs-toolbar-btn-border: rgba(0, 0, 0, 0.08);
+    --fs-toolbar-btn-color: #6b7280;
+    --fs-toolbar-btn-hover-bg: rgba(59, 130, 246, 0.1);
+    --fs-toolbar-btn-hover-border: rgba(59, 130, 246, 0.25);
+    --fs-toolbar-btn-hover-color: #3b82f6;
+    --fs-title-bg: linear-gradient(
+      90deg,
+      rgba(219, 228, 239, 0.95),
+      rgba(243, 245, 249, 0.95),
+      rgba(219, 228, 239, 0.95)
+    );
+  }
 </style>
