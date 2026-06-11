@@ -899,10 +899,35 @@
     try {
       // 地图API应该已经在组件创建时加载完成，直接初始化地图
       initMap()
+      // 地图就绪后预加载表格页核心组件，缩短用户跳转后的首次渲染时间
+      mapLoader.getMapInstance().then(() => {
+        setTimeout(preloadTableComponents, 1000)
+      })
     } catch (error) {
       console.error('地图初始化失败:', error)
     }
   })
+
+  /**
+   * 预加载 ArtSearchBar、ArtTableHeader、ArtTable 组件 JS chunk
+   * 在用户浏览 user-map 期间后台加载，跳转表格页时可命中浏览器缓存实现瞬开
+   * 注：这些组件在项目中为全局 auto-import（unplugin-vue-components），
+   *     正常构建时会打包进各页面 chunk；此处手动 import 可确保 Vite 将其拆分
+   *     为独立 chunk，配合 webpackPreload 提示浏览器提前缓存。
+   */
+  const preloadTableComponents = async () => {
+    try {
+      await Promise.all([
+        import(/* webpackPreload: true */ '@/components/core/forms/art-search-bar/index.vue'),
+        import(/* webpackPreload: true */ '@/components/core/tables/art-table-header/index.vue'),
+        import(/* webpackPreload: true */ '@/components/core/tables/art-table/index.vue')
+      ])
+      console.log('[预加载] ArtSearchBar / ArtTableHeader / ArtTable 已缓存')
+    } catch (e) {
+      // 静默失败，不影响主流程
+      console.warn('[预加载] 表格组件预加载失败', e)
+    }
+  }
   onBeforeUnmount(() => {
     if (locationProgressTimer) {
       clearInterval(locationProgressTimer)
