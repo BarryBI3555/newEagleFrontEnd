@@ -334,8 +334,8 @@
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue'
   import { ElRow, ElCol, ElTabs, ElTabPane, ElTable, ElTableColumn } from 'element-plus'
-  import { MapLoader } from '@/api/MapLoader/mapLoader'
-  import { AdministrativeRegionManager } from '../../lpmap/api/AdministrativeRegionmanager.ts'
+  import { MapLoader } from '../../lpmap/api/mapLoader'
+  import { AdministrativeRegionManager } from '../../lpmap/api/AdministrativeRegionmanager'
   import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
   import { RainCockpit } from '@views/management/api'
 
@@ -657,7 +657,7 @@
   const scrollBarType = computed<ThemeType>(() => {
     if (!dayLevelsData.value.length) return 'success'                  // 无预警：绿色
     if (dayLevelsData.value.some((d) => (d.warning || '').includes('红色'))) return 'danger'   // 红色
-    if (dayLevelsData.value.some((d) => (d.warning || '').includes('橙色'))) return 'warning'  // 橙色
+    if (dayLevelsData.value.some((d) => (d.warning || '').includes('橙色'))) return 'warning'  // 黄色
     if (dayLevelsData.value.some((d) => (d.warning || '').includes('黄色'))) return 'warning'  // 黄色
     if (dayLevelsData.value.some((d) => (d.warning || '').includes('蓝色'))) return 'secondary'     // 蓝色
     return 'success'
