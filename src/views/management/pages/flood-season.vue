@@ -6,12 +6,20 @@
     <!-- ==================== 气象信息滚动 ==================== -->
     <div class="scroll-bar">
       <ArtTextScroll
-        v-if="scrollText"
-        :text="scrollText"
         direction="left"
         :speed="50"
-        type="warning"
-      />
+        :type="scrollBarType"
+      >
+        <template v-if="dayLevelsData.length">
+          <span
+            v-for="(d, i) in dayLevelsData"
+            :key="i"
+            :class="getRankClass(d.warning)"
+          >【{{ d.rank || '等级待定' }}】 {{ d.warning || '' }} — {{ d.meteor || '' }}</span>
+          <!-- <span v-for="(d, i) in dayLevelsData" :key="'sep' + i"> </span> -->
+        </template>
+        <span v-else>今日暂无气象预警信息</span>
+      </ArtTextScroll>
     </div>
 
     <!-- ==================== 左 + 右 主体 ==================== -->
@@ -75,9 +83,17 @@
               <div class="place-panel-body" v-show="!isPlacePanelCollapsed"
                 :style="{ '--scrollbar-danger-color': scrollbarDangerColor }">
                 <div v-if="processes.length === 0" class="place-empty">今日暂无预警措施</div>
-                <div v-else class="process-list">
-                  <div v-for="p in processes" :key="p.number" class="process-item">
-                    <span class="process-text">{{ p.measure }}</span>
+                <div v-else class="process-list" ref="processListRef">
+                  <div class="process-scroll-inner" :class="{ 'scroll-active': needsScroll }">
+                    <div v-for="p in processes" :key="p.number" class="process-item">
+                      <span class="process-text">{{ p.measure }}</span>
+                    </div>
+                    <!-- 内容溢出时才接副本做无缝滚动 -->
+                    <template v-if="needsScroll">
+                      <div v-for="p in processes" :key="'copy-' + p.number" class="process-item">
+                        <span class="process-text">{{ p.measure }}</span>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -316,7 +332,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue'
+  import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue'
   import { ElRow, ElCol, ElTabs, ElTabPane, ElTable, ElTableColumn } from 'element-plus'
   import { MapLoader } from '@/api/MapLoader/mapLoader'
   import { AdministrativeRegionManager } from '../../lpmap/api/AdministrativeRegionmanager.ts'
@@ -424,7 +440,8 @@
   const reportTableData = ref<CardData[]>([])
 
   // ==================== 滚动文字 ====================
-  const scrollText = ref('')
+  // 保留原始数据，供按等级着色使用
+  const dayLevelsData = ref<DayLevel[]>([])
   const activeTab = ref<'repair' | 'lianluo' | 'items'>('items')
   const todayDate = computed(() => {
     const d = new Date()
@@ -481,6 +498,33 @@
     measure: string
   }
   const processes = ref<LevelProcess[]>([])
+  const processListRef = ref<HTMLElement | null>(null)
+  const needsScroll = ref(false)
+
+  const checkOverflow = () => {
+    const listEl = processListRef.value
+    if (!listEl) return
+    const containerH = listEl.clientHeight
+    // 无副本时 scrollHeight = 单份高度；有副本时 = 2× 单份高度
+    const singleH = needsScroll.value ? listEl.scrollHeight / 2 : listEl.scrollHeight
+    const overflow = singleH > containerH
+    if (overflow !== needsScroll.value) {
+      needsScroll.value = overflow
+    }
+  }
+
+  watch(processes, async () => {
+    await nextTick()
+    setTimeout(checkOverflow, 0)
+  })
+
+  // needsScroll 变为 true 后副本才渲染，需再测一次校准（此时始终 true）
+  watch(needsScroll, async (val) => {
+    if (val) {
+      await nextTick()
+      setTimeout(checkOverflow, 0)
+    }
+  })
 
   // 滚动条颜色：取 processes 中最小编号（最危险）的颜色渐变
   // 编号越小越危险 → 红色渐变；编号越大越安全 → 绿色
@@ -518,6 +562,7 @@
   }
 
   const toggleDistricts = () => regionManager?.toggleDistricts()
+  const isDistrictsVisible = computed(() => regionManager?.showingDistricts.value ?? false)
 
   const toggleMapFullscreen = () => {
     isMapFullscreen.value = !isMapFullscreen.value
@@ -542,11 +587,7 @@
       ])
 
       // 滚动文字
-      scrollText.value = dayLevels?.length
-        ? dayLevels
-            .map((d) => `【${d.rank || '等级待定'}】 ${d.warning || ''} — ${d.meteor || ''}`)
-            .join('    ●    ')
-        : '今日暂无气象预警信息'
+      dayLevelsData.value = dayLevels || []
 
       zhibans.value = z || []
       repairs.value = r || []
@@ -601,7 +642,28 @@
     return Math.max(0, Math.min(100, pct))
   }
 
-  // ==================== 地图初始化 ====================
+  // ==================== 等级颜色映射 ====================
+  const getRankClass = (warning: string) => {
+    const w = warning?.toLowerCase() || ''
+    if (w.includes('红色')) return 'rank-red'
+    if (w.includes('橙色')) return 'rank-orange'
+    if (w.includes('黄色')) return 'rank-yellow'
+    if (w.includes('蓝色')) return 'rank-blue'
+    return 'rank-default'
+  }
+
+  // 计算最高预警等级，决定滚动条容器颜色（对应 ArtTextScroll type 主题）
+  type ThemeType = 'theme' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'danger'
+  const scrollBarType = computed<ThemeType>(() => {
+    if (!dayLevelsData.value.length) return 'success'                  // 无预警：绿色
+    if (dayLevelsData.value.some((d) => (d.warning || '').includes('红色'))) return 'danger'   // 红色
+    if (dayLevelsData.value.some((d) => (d.warning || '').includes('橙色'))) return 'warning'  // 橙色
+    if (dayLevelsData.value.some((d) => (d.warning || '').includes('黄色'))) return 'warning'  // 黄色
+    if (dayLevelsData.value.some((d) => (d.warning || '').includes('蓝色'))) return 'secondary'     // 蓝色
+    return 'success'
+  })
+
+   // ==================== 地图初始化 ====================
   const initMap = async () => {
     try {
       await mapLoader.loadMapApi()
@@ -617,6 +679,14 @@
         center,
         mapStyleId: 'style1'
       })
+
+      // 阻止地图容器上的 wheel 冒泡到地图（地图会用它缩放）
+      container.addEventListener('wheel', (e) => {
+        const panel = document.querySelector('.flood-place-panel .place-panel-body') as HTMLElement
+        if (panel && panel.contains(e.target as Node)) {
+          e.preventDefault()
+        }
+      }, { capture: true, passive: false })
 
       // 点击地图空白处关闭停车场详情
       map.on('click', () => {
@@ -732,7 +802,7 @@
   })
 
   onBeforeUnmount(() => {
-    if (heat) {
+    if (heat && typeof heat.setMap === 'function') {
       heat.setMap(null)
       heat = null
     }
@@ -1036,6 +1106,8 @@
     bottom: 10px;
     max-height: 260px;
     z-index: 9999;
+    display: flex;
+    flex-direction: column;
     width: 320px;
     background: var(--fs-bg-panel);
     border-radius: 12px;
@@ -1089,7 +1161,9 @@
     flex-direction: column;
     gap: 8px;
     max-height: 60vh;
-    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .place-empty {
@@ -1102,7 +1176,28 @@
   .process-list {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .process-scroll-inner {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
+  }
+
+  .process-scroll-inner.scroll-active {
+    animation: scroll-up 20s linear infinite;
+  }
+
+  .process-scroll-inner.scroll-active:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes scroll-up {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
   }
 
   .process-item {
@@ -1113,6 +1208,7 @@
     border-radius: 8px;
     padding: 10px 12px;
     line-height: 1.6;
+    flex-shrink: 0;
   }
 
   .process-text {
@@ -1904,6 +2000,13 @@
   .cards-list::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  /* ==================== 预警等级颜色 ==================== */
+  .rank-red    { color: var(--fs-red)       !important; font-weight: 700; }
+  .rank-orange { color: var(--fs-orange)    !important; font-weight: 700; }
+  .rank-yellow { color: var(--fs-yellow)    !important; font-weight: 600; }
+  .rank-blue   { color: var(--fs-blue-badge) !important; font-weight: 500; }
+  .rank-default{ color: var(--fs-success) !important; }
 </style>
 
 <style>
